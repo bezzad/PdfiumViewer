@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30128.74
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PdfiumViewer", "PdfiumViewer\PdfiumViewer.csproj", "{F4E1CB41-983F-40AD-8889-38C4F655D3AE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfiumViewer.Demo", "PdfiumViewer.Demo\PdfiumViewer.Demo.csproj", "{ECD0ED77-6FD9-4A3F-9115-8A8362C1E14B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F4E1CB41-983F-40AD-8889-38C4F655D3AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4E1CB41-983F-40AD-8889-38C4F655D3AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4E1CB41-983F-40AD-8889-38C4F655D3AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4E1CB41-983F-40AD-8889-38C4F655D3AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ECD0ED77-6FD9-4A3F-9115-8A8362C1E14B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ECD0ED77-6FD9-4A3F-9115-8A8362C1E14B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ECD0ED77-6FD9-4A3F-9115-8A8362C1E14B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ECD0ED77-6FD9-4A3F-9115-8A8362C1E14B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5048F470-1047-4BD4-AE69-E5A0FA160C45}
+	EndGlobalSection
+EndGlobal
