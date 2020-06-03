@@ -39,9 +39,8 @@
             <Button x:Name="BtnZoomOut" Width="25" Content="-"/>
             <GridSplitter Background="Gray" Width="1" Margin="5,0"/>
 
-            <Button x:Name="BtnFitWidth" Width="60" Content="Fit Width"/>
-            <Button x:Name="BtnFitHeight" Width="65" Content="Fit Height"/>
-            <Button x:Name="BtnFitBest" Width="60" Content="Fit Best"/>
+            <Button x:Name="BtnFitWidth" Width="60" Content="Fit Width" Click="OnFitWidth"/>
+            <Button x:Name="BtnFitHeight" Width="65" Content="Fit Height" Click="OnFitHeight"/>
             <GridSplitter Background="Gray" Width="1" Margin="5,0"/>
 
             <Button x:Name="BtnRotateLeft" Width="80" Content="Rotate Left"/>

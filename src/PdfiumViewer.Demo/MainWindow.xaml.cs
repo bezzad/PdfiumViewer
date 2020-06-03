@@ -23,6 +23,7 @@ namespace PdfiumViewer.Demo
 
         public event PropertyChangedEventHandler PropertyChanged;
         public int PageNo { get; set; }
+        public PdfViewerZoomMode ZoomMode { get; set; }
         public ICommand GoNextPageCommand { get; set; }
 
 
@@ -31,6 +32,7 @@ namespace PdfiumViewer.Demo
             InitializeComponent();
 
             DataContext = this;
+            ZoomMode = PdfViewerZoomMode.FitHeight;
             tokenSource = new CancellationTokenSource();
         }
 
@@ -131,11 +133,21 @@ namespace PdfiumViewer.Demo
         }
         private void GotoPage(int page)
         {
-            var size = pdfDoc.PageSizes[page - 1];
-            var whRatio = size.Width / size.Height;
+            var actualHeight = (int)this.ActualHeight - 100;
+            var actualWidth = (int)this.ActualWidth - 100;
+            var currentPageSize = pdfDoc.PageSizes[page - 1];
+            var whRatio = currentPageSize.Width / currentPageSize.Height;
+            var hwRatio = currentPageSize.Height / currentPageSize.Width;
 
-            var height = (int)this.ActualHeight - 100;
-            var width = (int)(whRatio * height); //(int)(this.ActualWidth - 95) / 2;
+            var height = actualHeight;
+            var width = (int)(whRatio * actualHeight);
+
+            if (ZoomMode == PdfViewerZoomMode.FitWidth)
+            {
+                width = actualWidth;
+                height = (int)(hwRatio * actualWidth);
+            }
+
             imageMemDC.Source = RenderPageToMemory(page, width, height);
         }
 
@@ -150,5 +162,15 @@ namespace PdfiumViewer.Demo
                 PageNo += 1;
         }
 
+        private void OnFitWidth(object sender, RoutedEventArgs e)
+        {
+            ZoomMode = PdfViewerZoomMode.FitWidth;
+            GotoPage(PageNo);
+        }
+        private void OnFitHeight(object sender, RoutedEventArgs e)
+        {
+            ZoomMode = PdfViewerZoomMode.FitHeight;
+            GotoPage(PageNo);
+        }
     }
 }

@@ -3,7 +3,6 @@
     public enum PdfViewerZoomMode
     {
         FitHeight,
-        FitWidth,
-        FitBest
+        FitWidth
     }
 }
