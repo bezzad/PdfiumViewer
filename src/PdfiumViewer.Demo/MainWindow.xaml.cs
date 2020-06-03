@@ -3,14 +3,12 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
-using PdfiumViewer.Demo.Annotations;
 
 namespace PdfiumViewer.Demo
 {
@@ -24,8 +22,8 @@ namespace PdfiumViewer.Demo
         PdfDocument pdfDoc;
 
         public event PropertyChangedEventHandler PropertyChanged;
-        public int PageNo { get; set; } 
-        public ICommand GoNextPageCommand { get; set; } 
+        public int PageNo { get; set; }
+        public ICommand GoNextPageCommand { get; set; }
 
 
         public MainWindow()
@@ -36,6 +34,11 @@ namespace PdfiumViewer.Demo
             tokenSource = new CancellationTokenSource();
         }
 
+        // Note: called by `PropertyChanged.Fody` when PageNo changed
+        protected void OnPageNoChanged()
+        {
+            GotoPage(PageNo);
+        }
         private async void RenderToMemDCButton_Click(object sender, RoutedEventArgs e)
         {
             if (pdfDoc == null)
@@ -82,11 +85,12 @@ namespace PdfiumViewer.Demo
             GC.Collect();
             return bs;
         }
-        private void LoadPDFButton_Click(object sender, RoutedEventArgs e)
+        private void OpenPdf(object sender, RoutedEventArgs e)
         {
             var dialog = new OpenFileDialog
             {
-                Filter = "PDF Files (*.pdf)|*.pdf|All Files (*.*)|*.*", Title = "Open PDF File"
+                Filter = "PDF Files (*.pdf)|*.pdf|All Files (*.*)|*.*",
+                Title = "Open PDF File"
             };
 
             if (dialog.ShowDialog() == true)
@@ -125,7 +129,6 @@ namespace PdfiumViewer.Demo
 
             //searchResultLabel.Text = sb.ToString();
         }
-
         private void GotoPage(int page)
         {
             var width = (int)(this.ActualWidth - 95) / 2;
@@ -133,24 +136,11 @@ namespace PdfiumViewer.Demo
             imageMemDC.Source = RenderPageToMemDC(page, width, height);
         }
 
-        // Note: called by `PropertyChanged.Fody`
-        [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-
-            if (propertyName == nameof(PageNo))
-            {
-                GotoPage(PageNo);
-            }
-        }
-
         private void OnPrevPageClick(object sender, RoutedEventArgs e)
         {
             if (PageNo > 1)
                 PageNo -= 1;
         }
-
         private void OnNextPageClick(object sender, RoutedEventArgs e)
         {
             if (PageNo < pdfDoc.PageCount - 1)

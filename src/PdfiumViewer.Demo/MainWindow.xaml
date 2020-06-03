@@ -15,7 +15,7 @@
         </Grid.RowDefinitions>
         <Menu Grid.Row="0" Grid.Column="0" >
             <MenuItem Header="File" Height="30">
-                <MenuItem Header="_Open PDF" Click="LoadPDFButton_Click"/>
+                <MenuItem Header="_Open PDF" Click="OpenPdf"/>
                 <MenuItem Header="Start _Render" Click="RenderToMemDCButton_Click"/>
                 <MenuItem Header="_Close"/>
                 <MenuItem Header="_Save"/>
