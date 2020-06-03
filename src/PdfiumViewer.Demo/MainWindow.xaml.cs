@@ -39,7 +39,7 @@ namespace PdfiumViewer.Demo
         {
             GotoPage(PageNo);
         }
-        private async void RenderToMemDCButton_Click(object sender, RoutedEventArgs e)
+        private async void RenderToMemory(object sender, RoutedEventArgs e)
         {
             if (pdfDoc == null)
             {
@@ -60,7 +60,7 @@ namespace PdfiumViewer.Demo
                     imageMemDC.Source = await Task.Run(() =>
                     {
                         tokenSource.Token.ThrowIfCancellationRequested();
-                        return RenderPageToMemDC(i, width, height);
+                        return RenderPageToMemory(i, width, height);
                     }, tokenSource.Token);
 
                     Title = $"Renderd Pages: {i}, Memory: {currentProcess.PrivateMemorySize64 / (1920 * 1080)} MB, Time: {sw.Elapsed.TotalSeconds:0.0} sec";
@@ -77,7 +77,7 @@ namespace PdfiumViewer.Demo
             sw.Stop();
             Title = $"Rendered {pdfDoc.PageCount} Pages within {sw.Elapsed.TotalSeconds:0.0} seconds, Memory: {currentProcess.PrivateMemorySize64 / (1024 * 1024)} MB";
         }
-        private BitmapSource RenderPageToMemDC(int page, int width, int height)
+        private BitmapSource RenderPageToMemory(int page, int width, int height)
         {
             var image = pdfDoc.Render(page, width, height, 300, 300, false);
             var bs = BitmapHelper.ToBitmapSource(image);
@@ -133,7 +133,7 @@ namespace PdfiumViewer.Demo
         {
             var width = (int)(this.ActualWidth - 95) / 2;
             var height = (int)this.ActualHeight - 95;
-            imageMemDC.Source = RenderPageToMemDC(page, width, height);
+            imageMemDC.Source = RenderPageToMemory(page, width, height);
         }
 
         private void OnPrevPageClick(object sender, RoutedEventArgs e)
@@ -146,5 +146,6 @@ namespace PdfiumViewer.Demo
             if (PageNo < pdfDoc.PageCount - 1)
                 PageNo += 1;
         }
+
     }
 }

@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" Background="LightGray">
+        Title="PDFium Viewer WPF Demo" Height="450" Width="800" Background="LightGray">
     <Grid >
         <Grid.RowDefinitions>
             <RowDefinition Height="30"/>
@@ -16,7 +16,7 @@
         <Menu Grid.Row="0" Grid.Column="0" >
             <MenuItem Header="File" Height="30">
                 <MenuItem Header="_Open PDF" Click="OpenPdf"/>
-                <MenuItem Header="Start _Render" Click="RenderToMemDCButton_Click"/>
+                <MenuItem Header="_Render all pages" Click="RenderToMemory"/>
                 <MenuItem Header="_Close"/>
                 <MenuItem Header="_Save"/>
             </MenuItem>
