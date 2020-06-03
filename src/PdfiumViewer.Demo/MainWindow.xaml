@@ -3,41 +3,60 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:PdfiumViewer.Demo"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="450" Width="800" Background="LightGray">
     <Grid >
         <Grid.RowDefinitions>
             <RowDefinition Height="30"/>
             <RowDefinition Height="30"/>
-            <RowDefinition Height="30"/>
-            <RowDefinition Height="30"/>
+            <RowDefinition Height="5"/>
             <RowDefinition />
             <RowDefinition Height="30" />
-            <RowDefinition Height="30" />
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
+        <Menu Grid.Row="0" Grid.Column="0" >
+            <MenuItem Header="File" Height="30">
+                <MenuItem Header="_Open PDF" Click="LoadPDFButton_Click"/>
+                <MenuItem Header="Start _Render" Click="RenderToMemDCButton_Click"/>
+                <MenuItem Header="_Close"/>
+                <MenuItem Header="_Save"/>
+            </MenuItem>
+            <MenuItem Header="Tools" Height="30">
+                <MenuItem Header="_Find"/>
+                <MenuItem Header="_Information"/>
+            </MenuItem>
+        </Menu>
+        <ToolBar Grid.Row="1" Grid.Column="0" >
+            <TextBlock Text="Page:" VerticalAlignment="Center"/>
+            <TextBox x:Name="TxtPageNo" Width="50" Text="{Binding PageNo}" />
+            <Button x:Name="BtnPrevPage" Width="25" Content="&lt;"/>
+            <Button x:Name="BtnNextPage" Width="25" Content="&gt;"/>
+            <GridSplitter Background="Gray" Width="1" Margin="5,0"/>
 
-        <Label x:Name="labelMemDC" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" />
+            <TextBlock Text="Zoom:" VerticalAlignment="Center"/>
+            <TextBox x:Name="TxtZoomX" Width="50" Text="{Binding ZoomX}" />
+            <Button x:Name="BtnZoomIn" Width="25" Content="+"/>
+            <Button x:Name="BtnZoomOut" Width="25" Content="-"/>
+            <GridSplitter Background="Gray" Width="1" Margin="5,0"/>
 
-        <Button Click="LoadPDFButton_Click" Content="Load PDF" Grid.ColumnSpan="2"/>
-        <Button Click="RenderToMemDCButton_Click" Content="Start Rendering by MemDC" Grid.Row="1" Grid.ColumnSpan="2" />
+            <Button x:Name="BtnFitWidth" Width="60" Content="Fit Width"/>
+            <Button x:Name="BtnFitHeight" Width="65" Content="Fit Height"/>
+            <Button x:Name="BtnFitBest" Width="60" Content="Fit Best"/>
+            <GridSplitter Background="Gray" Width="1" Margin="5,0"/>
 
-        <Label Content="RenderPage with Memory Device Context" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Background="LightGoldenrodYellow"/>
+            <Button x:Name="BtnRotateLeft" Width="80" Content="Rotate Left"/>
+            <Button x:Name="BtnRotateRight" Width="80" Content="Rotate Right"/>
+            <GridSplitter Background="Gray" Width="1" Margin="5,0"/>
 
-        <Image  x:Name="imageMemDC" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"/>
+            <Button x:Name="BtnShowBookmarks" Width="100" Content="Show Bookmarks"/>
+            <Button x:Name="BtnGetText" Width="100" Content="Get Page Text"/>
 
-        <StackPanel Grid.Row="5" Orientation="Horizontal">
-            <TextBox x:Name="searchValueTextBox" Text="Enter value to search"   VerticalAlignment="Center" Width="150"/>
-            <CheckBox x:Name="matchCaseCheckBox" Content="Match CaSe" VerticalAlignment="Center" Margin="5,0"/>
-            <CheckBox x:Name="wholeWordOnlyCheckBox" Content="Whole Word Only" VerticalAlignment="Center" Margin="5,0"/>
-        </StackPanel>
+        </ToolBar>
 
-        <Button Content="Search" Grid.Row="6" Click="DoSearch_Click"/>
+        <Image  x:Name="imageMemDC" Grid.Row="3" Grid.Column="0" />
 
-        <TextBox x:Name="searchResultLabel" Grid.Row="5" Grid.RowSpan="2" Grid.Column="1" />
+        <StatusBar Grid.Row="4" Grid.Column="0">
+            <StatusBarItem Content="Page:" />
+            <StatusBarItem Content="{Binding PageNo, Mode=OneWay}" />
+        </StatusBar>
     </Grid>
 </Window>

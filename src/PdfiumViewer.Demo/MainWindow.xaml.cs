@@ -51,8 +51,7 @@ namespace PdfiumViewer.Demo
                         return RenderPageToMemDC(i, width, height);
                     }, tokenSource.Token);
 
-                    labelMemDC.Content =
-                        $"Renderd Pages: {i}, Memory: {currentProcess.PrivateMemorySize64 / (1920 * 1080)} MB, Time: {sw.Elapsed.TotalSeconds:0.0} sec";
+                    Title = $"Renderd Pages: {i}, Memory: {currentProcess.PrivateMemorySize64 / (1920 * 1080)} MB, Time: {sw.Elapsed.TotalSeconds:0.0} sec";
 
                     currentProcess.Refresh();
 
@@ -66,8 +65,7 @@ namespace PdfiumViewer.Demo
             }
 
             sw.Stop();
-            labelMemDC.Content =
-                $"Rendered {pdfDoc.PageCount} Pages within {sw.Elapsed.TotalSeconds:0.0} seconds, Memory: {currentProcess.PrivateMemorySize64 / (1024 * 1024)} MB";
+            Title = $"Rendered {pdfDoc.PageCount} Pages within {sw.Elapsed.TotalSeconds:0.0} seconds, Memory: {currentProcess.PrivateMemorySize64 / (1024 * 1024)} MB";
         }
 
         private BitmapSource RenderPageToMemDC(int page, int width, int height)
@@ -101,11 +99,11 @@ namespace PdfiumViewer.Demo
 
         private void DoSearch_Click(object sender, RoutedEventArgs e)
         {
-            string text = searchValueTextBox.Text;
-            bool matchCase = matchCaseCheckBox.IsChecked.GetValueOrDefault();
-            bool wholeWordOnly = wholeWordOnlyCheckBox.IsChecked.GetValueOrDefault();
-
-            DoSearch(text, matchCase, wholeWordOnly);
+            // string text = searchValueTextBox.Text;
+            // bool matchCase = matchCaseCheckBox.IsChecked.GetValueOrDefault();
+            // bool wholeWordOnly = wholeWordOnlyCheckBox.IsChecked.GetValueOrDefault();
+            //
+            // DoSearch(text, matchCase, wholeWordOnly);
         }
 
         private void DoSearch(string text, bool matchCase, bool wholeWord)
@@ -118,7 +116,7 @@ namespace PdfiumViewer.Demo
                 sb.AppendLine($"Found \"{match.Text}\" in page: {match.Page}");
             }
 
-            searchResultLabel.Text = sb.ToString();
+            //searchResultLabel.Text = sb.ToString();
         }
 
     }
