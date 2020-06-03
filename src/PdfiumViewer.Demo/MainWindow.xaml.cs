@@ -1,29 +1,38 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using PdfiumViewer.Demo.Annotations;
 
 namespace PdfiumViewer.Demo
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
         CancellationTokenSource tokenSource;
         Process currentProcess = Process.GetCurrentProcess();
         PdfDocument pdfDoc;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        public int PageNo { get; set; } 
+        public ICommand GoNextPageCommand { get; set; } 
 
 
         public MainWindow()
         {
             InitializeComponent();
 
+            DataContext = this;
             tokenSource = new CancellationTokenSource();
         }
 
@@ -35,15 +44,15 @@ namespace PdfiumViewer.Demo
                 return;
             }
 
-            int width = (int)(this.ActualWidth - 30) / 2;
-            int height = (int)this.ActualHeight - 30;
+            var width = (int)(this.ActualWidth - 30) / 2;
+            var height = (int)this.ActualHeight - 30;
 
-            Stopwatch sw = new Stopwatch();
+            var sw = new Stopwatch();
             sw.Start();
 
             try
             {
-                for (int i = 0; i < pdfDoc.PageCount; i++)
+                for (var i = 0; i < pdfDoc.PageCount; i++)
                 {
                     imageMemDC.Source = await Task.Run(() =>
                     {
@@ -52,8 +61,6 @@ namespace PdfiumViewer.Demo
                     }, tokenSource.Token);
 
                     Title = $"Renderd Pages: {i}, Memory: {currentProcess.PrivateMemorySize64 / (1920 * 1080)} MB, Time: {sw.Elapsed.TotalSeconds:0.0} sec";
-
-                    currentProcess.Refresh();
 
                     GC.Collect();
                 }
@@ -67,13 +74,14 @@ namespace PdfiumViewer.Demo
             sw.Stop();
             Title = $"Rendered {pdfDoc.PageCount} Pages within {sw.Elapsed.TotalSeconds:0.0} seconds, Memory: {currentProcess.PrivateMemorySize64 / (1024 * 1024)} MB";
         }
-
         private BitmapSource RenderPageToMemDC(int page, int width, int height)
         {
             var image = pdfDoc.Render(page, width, height, 300, 300, false);
-            return BitmapHelper.ToBitmapSource(image);
+            var bs = BitmapHelper.ToBitmapSource(image);
+            currentProcess?.Refresh();
+            GC.Collect();
+            return bs;
         }
-
         private void LoadPDFButton_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new OpenFileDialog
@@ -86,9 +94,10 @@ namespace PdfiumViewer.Demo
                 var bytes = File.ReadAllBytes(dialog.FileName);
                 var mem = new MemoryStream(bytes);
                 pdfDoc = PdfDocument.Load(mem);
+                PageNo = 1;
+                GotoPage(PageNo);
             }
         }
-
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
@@ -96,7 +105,6 @@ namespace PdfiumViewer.Demo
             tokenSource?.Cancel();
             pdfDoc?.Dispose();
         }
-
         private void DoSearch_Click(object sender, RoutedEventArgs e)
         {
             // string text = searchValueTextBox.Text;
@@ -105,7 +113,6 @@ namespace PdfiumViewer.Demo
             //
             // DoSearch(text, matchCase, wholeWordOnly);
         }
-
         private void DoSearch(string text, bool matchCase, bool wholeWord)
         {
             var matches = pdfDoc.Search(text, matchCase, wholeWord);
@@ -119,5 +126,35 @@ namespace PdfiumViewer.Demo
             //searchResultLabel.Text = sb.ToString();
         }
 
+        private void GotoPage(int page)
+        {
+            var width = (int)(this.ActualWidth - 95) / 2;
+            var height = (int)this.ActualHeight - 95;
+            imageMemDC.Source = RenderPageToMemDC(page, width, height);
+        }
+
+        // Note: called by `PropertyChanged.Fody`
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+            if (propertyName == nameof(PageNo))
+            {
+                GotoPage(PageNo);
+            }
+        }
+
+        private void OnPrevPageClick(object sender, RoutedEventArgs e)
+        {
+            if (PageNo > 1)
+                PageNo -= 1;
+        }
+
+        private void OnNextPageClick(object sender, RoutedEventArgs e)
+        {
+            if (PageNo < pdfDoc.PageCount - 1)
+                PageNo += 1;
+        }
     }
 }

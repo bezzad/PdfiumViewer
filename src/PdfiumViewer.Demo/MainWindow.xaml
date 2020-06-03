@@ -28,8 +28,8 @@
         <ToolBar Grid.Row="1" Grid.Column="0" >
             <TextBlock Text="Page:" VerticalAlignment="Center"/>
             <TextBox x:Name="TxtPageNo" Width="50" Text="{Binding PageNo}" />
-            <Button x:Name="BtnPrevPage" Width="25" Content="&lt;"/>
-            <Button x:Name="BtnNextPage" Width="25" Content="&gt;"/>
+            <Button x:Name="BtnPrevPage" Width="25" Content="&lt;" Click="OnPrevPageClick"/>
+            <Button x:Name="BtnNextPage" Width="25" Content="&gt;" Click="OnNextPageClick"/>
             <GridSplitter Background="Gray" Width="1" Margin="5,0"/>
 
             <TextBlock Text="Zoom:" VerticalAlignment="Center"/>
