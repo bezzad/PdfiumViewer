@@ -43,19 +43,13 @@ namespace PdfiumViewer.Demo
 
             try
             {
-                for (int i = 1; i < pdfDoc.PageCount; i++)
+                for (int i = 0; i < pdfDoc.PageCount; i++)
                 {
-                    imageMemDC.Source =
-                        await
-                            Task.Run<BitmapSource>(
-                                new Func<BitmapSource>(
-                                    () =>
-                                    {
-                                        tokenSource.Token.ThrowIfCancellationRequested();
-
-                                        return RenderPageToMemDC(i, width, height);
-                                    }
-                            ), tokenSource.Token);
+                    imageMemDC.Source = await Task.Run(() =>
+                    {
+                        tokenSource.Token.ThrowIfCancellationRequested();
+                        return RenderPageToMemDC(i, width, height);
+                    }, tokenSource.Token);
 
                     labelMemDC.Content =
                         $"Renderd Pages: {i}, Memory: {currentProcess.PrivateMemorySize64 / (1920 * 1080)} MB, Time: {sw.Elapsed.TotalSeconds:0.0} sec";
@@ -78,15 +72,16 @@ namespace PdfiumViewer.Demo
 
         private BitmapSource RenderPageToMemDC(int page, int width, int height)
         {
-            var image = pdfDoc.Render(page, width, height, 96, 96, false);
+            var image = pdfDoc.Render(page, width, height, 300, 300, false);
             return BitmapHelper.ToBitmapSource(image);
         }
 
         private void LoadPDFButton_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new OpenFileDialog();
-            dialog.Filter = "PDF Files (*.pdf)|*.pdf|All Files (*.*)|*.*";
-            dialog.Title = "Open PDF File";
+            var dialog = new OpenFileDialog
+            {
+                Filter = "PDF Files (*.pdf)|*.pdf|All Files (*.*)|*.*", Title = "Open PDF File"
+            };
 
             if (dialog.ShowDialog() == true)
             {
