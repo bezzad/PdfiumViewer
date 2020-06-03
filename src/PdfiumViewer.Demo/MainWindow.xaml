@@ -11,6 +11,7 @@
             <RowDefinition Height="30"/>
             <RowDefinition Height="5"/>
             <RowDefinition />
+            <RowDefinition Height="5" />
             <RowDefinition Height="30" />
         </Grid.RowDefinitions>
         <Menu Grid.Row="0" Grid.Column="0" >
@@ -52,9 +53,14 @@
 
         </ToolBar>
 
-        <Image  x:Name="imageMemDC" Grid.Row="3" Grid.Column="0" />
+        <Border Grid.Row="3" Grid.Column="0" CornerRadius="10">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="10" Direction="270" RenderingBias="Performance" ShadowDepth="0" />
+            </Border.Effect>
+            <Image x:Name="imageMemDC"/>
+        </Border>
 
-        <StatusBar Grid.Row="4" Grid.Column="0">
+        <StatusBar Grid.Row="5" Grid.Column="0">
             <StatusBarItem Content="Page:" />
             <StatusBarItem Content="{Binding PageNo, Mode=OneWay}" />
         </StatusBar>

@@ -131,8 +131,11 @@ namespace PdfiumViewer.Demo
         }
         private void GotoPage(int page)
         {
-            var width = (int)(this.ActualWidth - 95) / 2;
-            var height = (int)this.ActualHeight - 95;
+            var size = pdfDoc.PageSizes[page - 1];
+            var whRatio = size.Width / size.Height;
+
+            var height = (int)this.ActualHeight - 100;
+            var width = (int)(whRatio * height); //(int)(this.ActualWidth - 95) / 2;
             imageMemDC.Source = RenderPageToMemory(page, width, height);
         }
 
