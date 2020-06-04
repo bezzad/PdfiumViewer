@@ -52,12 +52,14 @@
 
         </ToolBar>
 
-        <Border Grid.Row="3" Grid.Column="0" CornerRadius="10">
-            <Border.Effect>
+        <ScrollViewer Grid.Row="3" Grid.Column="0" 
+                      VerticalScrollBarVisibility="Auto" 
+                      HorizontalScrollBarVisibility="Auto">
+            <ScrollViewer.Effect>
                 <DropShadowEffect BlurRadius="10" Direction="270" RenderingBias="Performance" ShadowDepth="0" />
-            </Border.Effect>
-            <Image x:Name="imageMemDC"/>
-        </Border>
+            </ScrollViewer.Effect>
+            <Image x:Name="imageMemDC" />
+        </ScrollViewer>
 
         <StatusBar Grid.Row="5" Grid.Column="0">
             <StatusBarItem Content="Page:" />
