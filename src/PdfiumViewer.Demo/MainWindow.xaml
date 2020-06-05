@@ -86,7 +86,7 @@
 
         </ToolBar>
 
-        <ScrollViewer Grid.Row="2" Grid.Column="0" 
+        <ScrollViewer Grid.Row="2" Grid.Column="0" x:Name="PageFrame"
                       VerticalScrollBarVisibility="Auto" 
                       HorizontalScrollBarVisibility="Auto">
             <ScrollViewer.Effect>

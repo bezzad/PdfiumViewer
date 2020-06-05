@@ -19,6 +19,7 @@ namespace PdfiumViewer.Demo
         private Process CurrentProcess { get; } = Process.GetCurrentProcess();
         private CancellationTokenSource Cts { get; }
         private PdfDocument Document { get; set; }
+        private int ScrollWidth { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
         public int PageNo { get; set; }
@@ -34,6 +35,7 @@ namespace PdfiumViewer.Demo
             Cts = new CancellationTokenSource();
             ZoomMode = PdfViewerZoomMode.FitHeight;
             Dpi = 96;
+            ScrollWidth = 50;
             DataContext = this;
         }
 
@@ -133,8 +135,9 @@ namespace PdfiumViewer.Demo
         {
             if (Document != null)
             {
-                var actualHeight = (int)this.ActualHeight - 100;
-                var actualWidth = (int)this.ActualWidth - 50;
+                var actualWidth = (int)PageFrame.ViewportWidth;
+                var actualHeight = (int)PageFrame.ViewportHeight;
+
                 var currentPageSize = Document.PageSizes[page];
                 var whRatio = currentPageSize.Width / currentPageSize.Height;
 
@@ -143,7 +146,7 @@ namespace PdfiumViewer.Demo
 
                 if (ZoomMode == PdfViewerZoomMode.FitWidth)
                 {
-                    width = actualWidth;
+                    width = actualWidth - ScrollWidth;
                     height = (int)(1 / whRatio * actualWidth);
                 }
 
@@ -177,9 +180,13 @@ namespace PdfiumViewer.Demo
         {
             base.OnRenderSizeChanged(sizeInfo);
 
-            GotoPage(PageNo);
+            Task.Run(async () =>
+            {
+                await Task.Delay(1000);
+                GotoPage(PageNo);
+            });
         }
-
+        
         private void OnZoomInClick(object sender, RoutedEventArgs e)
         {
             throw new NotImplementedException();
