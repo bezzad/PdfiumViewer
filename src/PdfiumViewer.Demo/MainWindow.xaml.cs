@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Media.Imaging;
 
 namespace PdfiumViewer.Demo
@@ -24,8 +23,8 @@ namespace PdfiumViewer.Demo
         public event PropertyChangedEventHandler PropertyChanged;
         public int PageNo { get; set; }
         public int Dpi { get; set; }
+        public string InfoText { get; set; }
         public PdfViewerZoomMode ZoomMode { get; set; }
-        public ICommand GoNextPageCommand { get; set; }
 
 
         public MainWindow()
@@ -62,9 +61,9 @@ namespace PdfiumViewer.Demo
                     {
                         // Note: No need any code because OnPageNoChanged handler do everything perfectly ;)
                         await Dispatcher.InvokeAsync(() =>
-                            Title = $"Renderd Pages: {PageNo}, " +
-                                    $"Memory: {CurrentProcess.PrivateMemorySize64 / (1920 * 1080)} MB, " +
-                                    $"Time: {sw.Elapsed.TotalSeconds:0.0} sec");
+                            InfoText = $"Renderd Pages: {PageNo}, " +
+                                       $"Memory: {CurrentProcess.PrivateMemorySize64 / (1920 * 1080)} MB, " +
+                                       $"Time: {sw.Elapsed.TotalSeconds:0.0} sec");
                         await Task.Delay(1);
                     }
                 });
@@ -77,7 +76,7 @@ namespace PdfiumViewer.Demo
             }
 
             sw.Stop();
-            Title = $"Rendered {Document.PageCount} Pages within {sw.Elapsed.TotalSeconds:0.0} seconds, Memory: {CurrentProcess.PrivateMemorySize64 / (1024 * 1024)} MB";
+            InfoText = $"Rendered {Document.PageCount} Pages within {sw.Elapsed.TotalSeconds:0.0} seconds, Memory: {CurrentProcess.PrivateMemorySize64 / (1024 * 1024)} MB";
         }
         private BitmapSource RenderPageToMemory(int page, int width, int height)
         {
@@ -154,11 +153,13 @@ namespace PdfiumViewer.Demo
 
         private void OnPrevPageClick(object sender, RoutedEventArgs e)
         {
-            PageNo = Math.Min(Math.Max(PageNo - 1, 0), Document.PageCount - 1);
+            if (Document != null)
+                PageNo = Math.Min(Math.Max(PageNo - 1, 0), Document.PageCount - 1);
         }
         private void OnNextPageClick(object sender, RoutedEventArgs e)
         {
-            PageNo = Math.Min(Math.Max(PageNo + 1, 0), Document.PageCount - 1);
+            if (Document != null)
+                PageNo = Math.Min(Math.Max(PageNo + 1, 0), Document.PageCount - 1);
         }
 
         private void OnFitWidth(object sender, RoutedEventArgs e)
@@ -177,6 +178,46 @@ namespace PdfiumViewer.Demo
             base.OnRenderSizeChanged(sizeInfo);
 
             GotoPage(PageNo);
+        }
+
+        private void OnZoomInClick(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void OnZoomOutClick(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void OnRotateLeftClick(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void OnRotateRightClick(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void OnFindText(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void OnInfo(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void OnGetText(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void OnDisplayBookmarks(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
         }
     }
 }

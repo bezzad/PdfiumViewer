@@ -24,15 +24,15 @@ namespace PdfiumViewer.Demo
 
             using (System.Drawing.Bitmap source = (System.Drawing.Bitmap)bitmap.Clone())
             {
-                IntPtr ptr = source.GetHbitmap(); //obtain the Hbitmap
+                IntPtr hBitmap = source.GetHbitmap(); //obtain the Hbitmap
 
                 BitmapSource bs = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
-                    ptr,
+                    hBitmap,
                     IntPtr.Zero,
                     System.Windows.Int32Rect.Empty,
                     System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
 
-                NativeMethods.DeleteObject(ptr); //release the HBitmap
+                NativeMethods.DeleteObject(hBitmap); //release the HBitmap
                 bs.Freeze();
                 return bs;
             }
