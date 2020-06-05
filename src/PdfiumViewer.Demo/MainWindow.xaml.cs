@@ -1,21 +1,25 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using PdfiumViewer.Demo.Annotations;
 
 namespace PdfiumViewer.Demo
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        private Process CurrentProcess { get; } = Process.GetCurrentProcess();
+        private Process CurrentProcess { get; }
         private CancellationTokenSource Cts { get; }
+        private System.Windows.Threading.DispatcherTimer MemoryChecker { get; }
         public string InfoText { get; set; }
 
 
@@ -23,16 +27,25 @@ namespace PdfiumViewer.Demo
         {
             InitializeComponent();
 
+            CurrentProcess = Process.GetCurrentProcess();
             Cts = new CancellationTokenSource();
             DataContext = this;
+
+            MemoryChecker = new System.Windows.Threading.DispatcherTimer();
+            MemoryChecker.Tick += OnMemoryChecker;
+            MemoryChecker.Interval = new TimeSpan(0, 0, 1);
+            MemoryChecker.Start();
+        }
+
+        private void OnMemoryChecker(object? sender, EventArgs e)
+        {
+            InfoText = $"Memory: {CurrentProcess.PrivateMemorySize64 / 1024 / 1024} MB";
+            OnPropertyChanged(nameof(InfoText));
         }
 
 
         private async void RenderToMemory(object sender, RoutedEventArgs e)
         {
-            var sw = new Stopwatch();
-            sw.Start();
-
             try
             {
                 await Task.Run(async () =>
@@ -40,10 +53,6 @@ namespace PdfiumViewer.Demo
                     for (Renderer.PageNo = 0; Renderer.PageNo < Renderer.PageCount - 1; Renderer.PageNo++)
                     {
                         // Note: No need any code because OnPageNoChanged handler do everything perfectly ;)
-                        await Dispatcher.InvokeAsync(() =>
-                            InfoText = $"Renderd Pages: {Renderer.PageNo}, " +
-                                       $"Memory: {CurrentProcess.PrivateMemorySize64 / (1920 * 1080)} MB, " +
-                                       $"Time: {sw.Elapsed.TotalSeconds:0.0} sec");
                         await Task.Delay(1);
                     }
                 });
@@ -54,9 +63,6 @@ namespace PdfiumViewer.Demo
                 Debug.Fail(ex.Message);
                 MessageBox.Show(this, ex.Message, "Error!");
             }
-
-            sw.Stop();
-            InfoText = $"Rendered {Renderer.PageCount} Pages within {sw.Elapsed.TotalSeconds:0.0} seconds, Memory: {CurrentProcess.PrivateMemorySize64 / (1024 * 1024)} MB";
         }
 
         private void OpenPdf(object sender, RoutedEventArgs e)
@@ -78,6 +84,7 @@ namespace PdfiumViewer.Demo
         {
             base.OnClosed(e);
 
+            MemoryChecker?.Stop();
             Renderer?.Dispose();
         }
         private void DoSearch_Click(object sender, RoutedEventArgs e)
@@ -180,6 +187,14 @@ namespace PdfiumViewer.Demo
         private void OnSinglePageModeClick(object sender, RoutedEventArgs e)
         {
             Renderer.PagesDisplayMode = PdfViewerPagesDisplayMode.SinglePageMode;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
