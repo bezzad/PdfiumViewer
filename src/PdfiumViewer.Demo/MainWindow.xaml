@@ -44,13 +44,13 @@
             </Button>
             <GridSplitter Background="Gray" Width="1" Margin="5,0"/>
 
-            <Button ToolTip="One Page Mode">
+            <Button ToolTip="Single Page Mode" Click="OnSinglePageModeClick">
                 <Image Source="Resources/one_page.png" />
             </Button>
-            <Button ToolTip="Two Page Mode" >
+            <Button ToolTip="Book Mode" Click="OnBookModeClick">
                 <Image Source="Resources/two_page.png" />
             </Button>
-            <Button ToolTip="Continuous Pages Mode" >
+            <Button ToolTip="Continuous Pages Mode" Click="OnContinuousModeClick">
                 <Image Source="Resources/continuous_mode.png" />
             </Button>
             <GridSplitter Background="Gray" Width="1" Margin="5,0"/>
@@ -92,7 +92,10 @@
             <ScrollViewer.Effect>
                 <DropShadowEffect BlurRadius="10" Direction="270" RenderingBias="Performance" ShadowDepth="0" />
             </ScrollViewer.Effect>
-            <Image x:Name="imageMemDC" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Image x:Name="Frame1" />
+                <Image x:Name="Frame2" />
+            </StackPanel>
         </ScrollViewer>
 
         <StatusBar Grid.Row="4" Grid.Column="0">

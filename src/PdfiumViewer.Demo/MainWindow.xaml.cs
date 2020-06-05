@@ -26,6 +26,7 @@ namespace PdfiumViewer.Demo
         public int Dpi { get; set; }
         public string InfoText { get; set; }
         public PdfViewerZoomMode ZoomMode { get; set; }
+        public PdfViewerPagesDisplayMode PagesDisplayMode { get; set; }
 
 
         public MainWindow()
@@ -34,6 +35,7 @@ namespace PdfiumViewer.Demo
 
             Cts = new CancellationTokenSource();
             ZoomMode = PdfViewerZoomMode.FitHeight;
+            PagesDisplayMode = PdfViewerPagesDisplayMode.SinglePageMode;
             Dpi = 96;
             ScrollWidth = 50;
             DataContext = this;
@@ -147,10 +149,19 @@ namespace PdfiumViewer.Demo
                 if (ZoomMode == PdfViewerZoomMode.FitWidth)
                 {
                     width = actualWidth - ScrollWidth;
-                    height = (int)(1 / whRatio * actualWidth);
+                    if (PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode)
+                        width /= 2;
+                    height = (int)(1 / whRatio * width);
                 }
 
-                Dispatcher.Invoke(() => imageMemDC.Source = RenderPageToMemory(page, width, height));
+                Dispatcher.Invoke(() =>
+                {
+                    Frame1.Source = RenderPageToMemory(page, width, height);
+                    Frame2.Source = null;
+                    if (PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode &&
+                        page + 1 < Document.PageCount)
+                        Frame2.Source = RenderPageToMemory(page + 1, width, height);
+                });
             }
         }
 
@@ -186,7 +197,7 @@ namespace PdfiumViewer.Demo
                 GotoPage(PageNo);
             });
         }
-        
+
         private void OnZoomInClick(object sender, RoutedEventArgs e)
         {
             throw new NotImplementedException();
@@ -225,6 +236,24 @@ namespace PdfiumViewer.Demo
         private void OnDisplayBookmarks(object sender, RoutedEventArgs e)
         {
             throw new NotImplementedException();
+        }
+
+        private void OnContinuousModeClick(object sender, RoutedEventArgs e)
+        {
+            PagesDisplayMode = PdfViewerPagesDisplayMode.ContinuousMode;
+            GotoPage(PageNo);
+        }
+
+        private void OnBookModeClick(object sender, RoutedEventArgs e)
+        {
+            PagesDisplayMode = PdfViewerPagesDisplayMode.BookMode;
+            GotoPage(PageNo);
+        }
+
+        private void OnSinglePageModeClick(object sender, RoutedEventArgs e)
+        {
+            PagesDisplayMode = PdfViewerPagesDisplayMode.SinglePageMode;
+            GotoPage(PageNo);
         }
     }
 }
