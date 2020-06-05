@@ -104,12 +104,18 @@ namespace PdfiumViewer.Demo
         private void OnPrevPageClick(object sender, RoutedEventArgs e)
         {
             if (Renderer.IsDocumentLoaded)
-                Renderer.PageNo = Math.Min(Math.Max(Renderer.PageNo - 1, 0), Renderer.PageCount - 1);
+            {
+                var extentVal = Renderer.PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode ? 2 : 1;
+                Renderer.PageNo = Math.Min(Math.Max(Renderer.PageNo - extentVal, 0), Renderer.PageCount - 1);
+            }
         }
         private void OnNextPageClick(object sender, RoutedEventArgs e)
         {
             if (Renderer.IsDocumentLoaded)
-                Renderer.PageNo = Math.Min(Math.Max(Renderer.PageNo + 1, 0), Renderer.PageCount - 1);
+            {
+                var extentVal = Renderer.PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode ? 2 : 1;
+                Renderer.PageNo = Math.Min(Math.Max(Renderer.PageNo + extentVal, 0), Renderer.PageCount - 1);
+            }
         }
 
         private void OnFitWidth(object sender, RoutedEventArgs e)
