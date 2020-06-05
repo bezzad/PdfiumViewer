@@ -48,9 +48,10 @@ namespace PdfiumViewer.Demo
         {
             try
             {
+                var pageStep = Renderer.PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode ? 2 : 1;
                 await Task.Run(async () =>
                 {
-                    for (Renderer.PageNo = 0; Renderer.PageNo < Renderer.PageCount - 1; Renderer.PageNo++)
+                    for (Renderer.PageNo = 0; Renderer.PageNo < Renderer.PageCount - pageStep; Renderer.PageNo += pageStep)
                     {
                         // Note: No need any code because OnPageNoChanged handler do everything perfectly ;)
                         await Task.Delay(1);
