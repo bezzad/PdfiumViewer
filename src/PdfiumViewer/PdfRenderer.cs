@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
@@ -35,7 +33,7 @@ namespace PdfiumViewer
             Frames = new List<Image>();
             Panel = new StackPanel()
             {
-                
+
                 HorizontalAlignment = HorizontalAlignment.Center
             };
             Content = Panel;
@@ -68,6 +66,13 @@ namespace PdfiumViewer
         /// Note: called by `PropertyChanged.Fody` when PageNo changed
         /// </summary>
         protected void OnPageNoChanged()
+        {
+            GotoPage(PageNo);
+        }
+        /// <summary>
+        /// Note: called by `PropertyChanged.Fody` when Dpi changed
+        /// </summary>
+        protected void OnDpiChanged()
         {
             GotoPage(PageNo);
         }

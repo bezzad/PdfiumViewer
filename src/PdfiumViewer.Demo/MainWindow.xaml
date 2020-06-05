@@ -24,13 +24,13 @@
             <GridSplitter Background="Gray" Width="1" Margin="5,0"/>
 
             <TextBlock Text="DPI:" VerticalAlignment="Center"/>
-            <TextBox x:Name="TxtDpi" Width="50" Text="{Binding Renderer.Dpi}" />
+            <TextBox x:Name="TxtDpi" Width="50" Text="{Binding ElementName=Renderer, Path=Dpi}" />
             <GridSplitter Background="Gray" Width="1" Margin="5,0" />
 
             <Button ToolTip="Previous Page" Click="OnPrevPageClick">
                 <Image Source="Resources/prev.png" />
             </Button>
-            <TextBox x:Name="TxtPageNo" Width="50" Text="{Binding Renderer.PageNo}" TextAlignment="Center" />
+            <TextBox x:Name="TxtPageNo" Width="50" Text="{Binding ElementName=Renderer, Path=PageNo}" TextAlignment="Center" />
             <Button ToolTip="Next Page" Click="OnNextPageClick">
                 <Image Source="Resources/next.png" />
             </Button>
@@ -90,7 +90,7 @@
 
         <StatusBar Grid.Row="4" Grid.Column="0">
             <StatusBarItem Content="Page:" />
-            <StatusBarItem Content="{Binding Renderer.PageNo, Mode=OneWay, Converter={StaticResource MathConverter}, ConverterParameter=+1}" />
+            <StatusBarItem Content="{Binding ElementName=Renderer, Path=PageNo, Mode=OneWay, Converter={StaticResource MathConverter}, ConverterParameter=+1}" />
             <StatusBarItem Content="     |    " />
             <StatusBarItem Content="{Binding InfoText, Mode=OneWay}" />
         </StatusBar>
