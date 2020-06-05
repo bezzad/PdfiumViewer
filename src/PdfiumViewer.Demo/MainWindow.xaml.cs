@@ -1,32 +1,22 @@
 ﻿using Microsoft.Win32;
 using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Media.Imaging;
 
 namespace PdfiumViewer.Demo
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window, INotifyPropertyChanged
+    public partial class MainWindow : Window
     {
         private Process CurrentProcess { get; } = Process.GetCurrentProcess();
         private CancellationTokenSource Cts { get; }
-        private PdfDocument Document { get; set; }
-        private int ScrollWidth { get; set; }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        public int PageNo { get; set; }
-        public int Dpi { get; set; }
         public string InfoText { get; set; }
-        public PdfViewerZoomMode ZoomMode { get; set; }
-        public PdfViewerPagesDisplayMode PagesDisplayMode { get; set; }
 
 
         public MainWindow()
@@ -34,26 +24,12 @@ namespace PdfiumViewer.Demo
             InitializeComponent();
 
             Cts = new CancellationTokenSource();
-            ZoomMode = PdfViewerZoomMode.FitHeight;
-            PagesDisplayMode = PdfViewerPagesDisplayMode.SinglePageMode;
-            Dpi = 96;
-            ScrollWidth = 50;
             DataContext = this;
         }
 
-        // Note: called by `PropertyChanged.Fody` when PageNo changed
-        protected void OnPageNoChanged()
-        {
-            GotoPage(PageNo);
-        }
+
         private async void RenderToMemory(object sender, RoutedEventArgs e)
         {
-            if (Document == null)
-            {
-                MessageBox.Show("First load the document");
-                return;
-            }
-
             var sw = new Stopwatch();
             sw.Start();
 
@@ -61,11 +37,11 @@ namespace PdfiumViewer.Demo
             {
                 await Task.Run(async () =>
                 {
-                    for (PageNo = 0; PageNo < Document.PageCount - 1; PageNo++)
+                    for (Renderer.PageNo = 0; Renderer.PageNo < Renderer.PageCount - 1; Renderer.PageNo++)
                     {
                         // Note: No need any code because OnPageNoChanged handler do everything perfectly ;)
                         await Dispatcher.InvokeAsync(() =>
-                            InfoText = $"Renderd Pages: {PageNo}, " +
+                            InfoText = $"Renderd Pages: {Renderer.PageNo}, " +
                                        $"Memory: {CurrentProcess.PrivateMemorySize64 / (1920 * 1080)} MB, " +
                                        $"Time: {sw.Elapsed.TotalSeconds:0.0} sec");
                         await Task.Delay(1);
@@ -80,16 +56,9 @@ namespace PdfiumViewer.Demo
             }
 
             sw.Stop();
-            InfoText = $"Rendered {Document.PageCount} Pages within {sw.Elapsed.TotalSeconds:0.0} seconds, Memory: {CurrentProcess.PrivateMemorySize64 / (1024 * 1024)} MB";
+            InfoText = $"Rendered {Renderer.PageCount} Pages within {sw.Elapsed.TotalSeconds:0.0} seconds, Memory: {CurrentProcess.PrivateMemorySize64 / (1024 * 1024)} MB";
         }
-        private BitmapSource RenderPageToMemory(int page, int width, int height)
-        {
-            var image = Document.Render(page, width, height, Dpi, Dpi, false);
-            var bs = BitmapHelper.ToBitmapSource(image);
-            CurrentProcess?.Refresh();
-            GC.Collect();
-            return bs;
-        }
+
         private void OpenPdf(object sender, RoutedEventArgs e)
         {
             var dialog = new OpenFileDialog
@@ -102,16 +71,14 @@ namespace PdfiumViewer.Demo
             {
                 var bytes = File.ReadAllBytes(dialog.FileName);
                 var mem = new MemoryStream(bytes);
-                Document = PdfDocument.Load(mem);
-                PageNo = 0;
-                GotoPage(PageNo);
+                Renderer.OpenPdf(mem);
             }
         }
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
 
-            Document?.Dispose();
+            Renderer?.Dispose();
         }
         private void DoSearch_Click(object sender, RoutedEventArgs e)
         {
@@ -123,7 +90,7 @@ namespace PdfiumViewer.Demo
         }
         private void DoSearch(string text, bool matchCase, bool wholeWord)
         {
-            var matches = Document.Search(text, matchCase, wholeWord);
+            var matches = Renderer.Search(text, matchCase, wholeWord);
             var sb = new StringBuilder();
 
             foreach (var match in matches.Items)
@@ -133,69 +100,25 @@ namespace PdfiumViewer.Demo
 
             //searchResultLabel.Text = sb.ToString();
         }
-        private void GotoPage(int page)
-        {
-            if (Document != null)
-            {
-                var actualWidth = (int)PageFrame.ViewportWidth;
-                var actualHeight = (int)PageFrame.ViewportHeight;
-
-                var currentPageSize = Document.PageSizes[page];
-                var whRatio = currentPageSize.Width / currentPageSize.Height;
-
-                var height = actualHeight;
-                var width = (int)(whRatio * actualHeight);
-
-                if (ZoomMode == PdfViewerZoomMode.FitWidth)
-                {
-                    width = actualWidth - ScrollWidth;
-                    if (PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode)
-                        width /= 2;
-                    height = (int)(1 / whRatio * width);
-                }
-
-                Dispatcher.Invoke(() =>
-                {
-                    Frame1.Source = RenderPageToMemory(page, width, height);
-                    Frame2.Source = null;
-                    if (PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode &&
-                        page + 1 < Document.PageCount)
-                        Frame2.Source = RenderPageToMemory(page + 1, width, height);
-                });
-            }
-        }
 
         private void OnPrevPageClick(object sender, RoutedEventArgs e)
         {
-            if (Document != null)
-                PageNo = Math.Min(Math.Max(PageNo - 1, 0), Document.PageCount - 1);
+            if (Renderer.IsDocumentLoaded)
+                Renderer.PageNo = Math.Min(Math.Max(Renderer.PageNo - 1, 0), Renderer.PageCount - 1);
         }
         private void OnNextPageClick(object sender, RoutedEventArgs e)
         {
-            if (Document != null)
-                PageNo = Math.Min(Math.Max(PageNo + 1, 0), Document.PageCount - 1);
+            if (Renderer.IsDocumentLoaded)
+                Renderer.PageNo = Math.Min(Math.Max(Renderer.PageNo + 1, 0), Renderer.PageCount - 1);
         }
 
         private void OnFitWidth(object sender, RoutedEventArgs e)
         {
-            ZoomMode = PdfViewerZoomMode.FitWidth;
-            GotoPage(PageNo);
+            Renderer.ZoomMode = PdfViewerZoomMode.FitWidth;
         }
         private void OnFitHeight(object sender, RoutedEventArgs e)
         {
-            ZoomMode = PdfViewerZoomMode.FitHeight;
-            GotoPage(PageNo);
-        }
-
-        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
-        {
-            base.OnRenderSizeChanged(sizeInfo);
-
-            Task.Run(async () =>
-            {
-                await Task.Delay(1000);
-                GotoPage(PageNo);
-            });
+            Renderer.ZoomMode = PdfViewerZoomMode.FitHeight;
         }
 
         private void OnZoomInClick(object sender, RoutedEventArgs e)
@@ -240,20 +163,17 @@ namespace PdfiumViewer.Demo
 
         private void OnContinuousModeClick(object sender, RoutedEventArgs e)
         {
-            PagesDisplayMode = PdfViewerPagesDisplayMode.ContinuousMode;
-            GotoPage(PageNo);
+            Renderer.PagesDisplayMode = PdfViewerPagesDisplayMode.ContinuousMode;
         }
 
         private void OnBookModeClick(object sender, RoutedEventArgs e)
         {
-            PagesDisplayMode = PdfViewerPagesDisplayMode.BookMode;
-            GotoPage(PageNo);
+            Renderer.PagesDisplayMode = PdfViewerPagesDisplayMode.BookMode;
         }
 
         private void OnSinglePageModeClick(object sender, RoutedEventArgs e)
         {
-            PagesDisplayMode = PdfViewerPagesDisplayMode.SinglePageMode;
-            GotoPage(PageNo);
+            Renderer.PagesDisplayMode = PdfViewerPagesDisplayMode.SinglePageMode;
         }
     }
 }

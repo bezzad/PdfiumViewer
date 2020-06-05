@@ -3,12 +3,12 @@ using System.Drawing;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace PdfiumViewer.Demo
+namespace PdfiumViewer
 {
-    internal class BitmapHelper
+    internal static class BitmapHelper
     {
 
-        public static BitmapSource ToBitmapSource(Image image)
+        public static BitmapSource ToBitmapSource(this Image image)
         {
             return ToBitmapSource(image as Bitmap);
         }
@@ -18,7 +18,7 @@ namespace PdfiumViewer.Demo
         /// </summary>
         /// <param name="bitmap">The Source Bitmap</param>
         /// <returns>The equivalent BitmapSource</returns>
-        public static BitmapSource ToBitmapSource(System.Drawing.Bitmap bitmap)
+        public static BitmapSource ToBitmapSource(this System.Drawing.Bitmap bitmap)
         {
             if (bitmap == null) return null;
 
@@ -38,7 +38,7 @@ namespace PdfiumViewer.Demo
             }
         }
 
-        public static BitmapSource ToBitmapSource(byte[] bytes, int width, int height, int dpiX, int dpiY)
+        public static BitmapSource ToBitmapSource(this byte[] bytes, int width, int height, int dpiX, int dpiY)
         {
             var result = BitmapSource.Create(
                             width,
