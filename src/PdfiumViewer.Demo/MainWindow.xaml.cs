@@ -23,6 +23,7 @@ namespace PdfiumViewer.Demo
 
         public event PropertyChangedEventHandler PropertyChanged;
         public int PageNo { get; set; }
+        public int Dpi { get; set; }
         public PdfViewerZoomMode ZoomMode { get; set; }
         public ICommand GoNextPageCommand { get; set; }
 
@@ -33,6 +34,7 @@ namespace PdfiumViewer.Demo
 
             Cts = new CancellationTokenSource();
             ZoomMode = PdfViewerZoomMode.FitHeight;
+            Dpi = 96;
             DataContext = this;
         }
 
@@ -79,7 +81,7 @@ namespace PdfiumViewer.Demo
         }
         private BitmapSource RenderPageToMemory(int page, int width, int height)
         {
-            var image = Document.Render(page, width, height, 300, 300, false);
+            var image = Document.Render(page, width, height, Dpi, Dpi, false);
             var bs = BitmapHelper.ToBitmapSource(image);
             CurrentProcess?.Refresh();
             GC.Collect();
