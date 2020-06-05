@@ -9,9 +9,7 @@
     <Grid >
         <Grid.RowDefinitions>
             <RowDefinition Height="40"/>
-            <RowDefinition Height="10"/>
             <RowDefinition />
-            <RowDefinition Height="10" />
             <RowDefinition Height="30" />
         </Grid.RowDefinitions>
         <ToolBar Grid.Row="0">
@@ -86,9 +84,9 @@
 
         </ToolBar>
 
-        <pdfiumViewer:PdfRenderer Grid.Row="2" Grid.Column="0" Name="Renderer"/>
+        <pdfiumViewer:PdfRenderer Grid.Row="1" Grid.Column="0" Name="Renderer" Padding="10"/>
 
-        <StatusBar Grid.Row="4" Grid.Column="0">
+        <StatusBar Grid.Row="2" Grid.Column="0">
             <StatusBarItem Content="Page:" />
             <StatusBarItem Content="{Binding ElementName=Renderer, Path=PageNo, Mode=OneWay, Converter={StaticResource MathConverter}, ConverterParameter=+1}" />
             <StatusBarItem Content="     |    " />

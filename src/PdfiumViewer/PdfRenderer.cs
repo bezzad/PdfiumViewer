@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Drawing.Printing;
 using System.IO;
 using System.Linq;
@@ -172,20 +173,37 @@ namespace PdfiumViewer
                 var startFrameIndex = startOffset / (pageSize.Height + FrameSpace.Top + FrameSpace.Bottom);
                 var endFrameIndex = (startOffset + height) / (pageSize.Height + FrameSpace.Top + FrameSpace.Bottom);
 
-                var startPageIndex = (int)Math.Min(Math.Max(startFrameIndex, 0), PageCount - 1);
+                PageNo = (int)Math.Min(Math.Max(startFrameIndex, 0), PageCount - 1);
                 var endPageIndex = (int)Math.Min(Math.Max(endFrameIndex, 0), PageCount - 1);
 
-                for (int page = startPageIndex; page <= endPageIndex; page++)
+                ReleaseFrames();
+
+                for (var page = PageNo; page <= endPageIndex; page++)
                 {
                     var frame = Frames[page];
                     if (IsUserVisible(frame) && frame.Source == null)
                     {
-                        frame.Source = RenderPageToMemory(page, frame.Width, frame.Height);
+                        frame.Source = RenderPage(page, frame.Width, frame.Height);
                     }
                 }
             }
         }
 
+        protected void ReleaseFrames()
+        {
+            foreach (var frame in Frames.Where(f => f.Source != null))
+            {
+                // if(frame is BitmapImage bi)
+                GC.SuppressFinalize(frame.Source);
+                frame.Source = null;
+            }
+
+            GC.Collect();
+        }
+        
+        /// <summary>
+        /// Note: this method have memory lake problem, please use RenderPage method instead of
+        /// </summary>
         protected BitmapSource RenderPageToMemory(int page, double width, double height)
         {
             var image = Document.Render(page, (int)width, (int)height, Dpi, Dpi, false);
@@ -193,6 +211,29 @@ namespace PdfiumViewer
             CurrentProcess?.Refresh();
             GC.Collect();
             return bs;
+        }
+        protected BitmapImage RenderPage(int page, double width, double height)
+        {
+            var image = Document.Render(page, (int)width, (int)height, Dpi, Dpi, false);
+            BitmapImage bitmapImage;
+            using (var memory = new MemoryStream())
+            {
+                image.Save(memory, ImageFormat.Png);
+                memory.Position = 0;
+                bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.StreamSource = memory;
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad; // not a mistake - see below
+                bitmapImage.EndInit();
+            }
+            // Why BitmapCacheOption.OnLoad?
+            // It seems counter intuitive, but this flag has two effects:
+            // It enables caching if caching is possible, and it causes the load to happen at EndInit().
+            // In our case caching is impossible, so all it does it cause the load to happen immediately.
+
+            CurrentProcess?.Refresh();
+            GC.Collect();
+            return bitmapImage;
         }
         public static bool IsUserVisible(UIElement element)
         {
@@ -213,16 +254,10 @@ namespace PdfiumViewer
 
                 Dispatcher.Invoke(() =>
                 {
-                    Frame1.Source = RenderPageToMemory(page, CurrentPageSize.Width, CurrentPageSize.Height);
+                    Frame1.Source = RenderPage(page, CurrentPageSize.Width, CurrentPageSize.Height);
 
                     if (PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode && page + 1 < Document.PageCount)
-                        Frame2.Source = RenderPageToMemory(page + 1, CurrentPageSize.Width, CurrentPageSize.Height);
-
-                    if (PagesDisplayMode == PdfViewerPagesDisplayMode.ContinuousMode)
-                    {
-                        Frame2.Source = RenderPageToMemory(page + 1, CurrentPageSize.Width, CurrentPageSize.Height);
-                        Frames[3].Source = RenderPageToMemory(page + 3, CurrentPageSize.Width, CurrentPageSize.Height);
-                    }
+                        Frame2.Source = RenderPage(page + 1, CurrentPageSize.Width, CurrentPageSize.Height);
                 });
             }
         }
