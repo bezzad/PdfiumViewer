@@ -9,6 +9,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Media.Effects;
 using System.Windows.Media.Imaging;
 using Image = System.Windows.Controls.Image;
@@ -34,6 +35,8 @@ namespace PdfiumViewer
             {
                 HorizontalAlignment = HorizontalAlignment.Center
             };
+            VirtualizingPanel.SetIsVirtualizing(Panel, true);
+            VirtualizingPanel.SetVirtualizationMode(Panel, VirtualizationMode.Recycling);
             Content = Panel;
 
             ZoomMode = PdfViewerZoomMode.FitHeight;
@@ -81,7 +84,7 @@ namespace PdfiumViewer
         protected void OnPagesDisplayModeChanged()
         {
             Panel.Children.Clear();
-            
+
             if (PagesDisplayMode == PdfViewerPagesDisplayMode.SinglePageMode)
             {
                 Frames = new Image[1];
@@ -156,6 +159,33 @@ namespace PdfiumViewer
             base.OnRenderSizeChanged(sizeInfo);
             GotoPage(PageNo);
         }
+        protected override void OnScrollChanged(ScrollChangedEventArgs e)
+        {
+            base.OnScrollChanged(e);
+
+            if (PagesDisplayMode == PdfViewerPagesDisplayMode.ContinuousMode)
+            {
+                var startOffset = e.VerticalOffset;
+                var height = e.ViewportHeight;
+                var pageSize = CalculatePageSize(0);
+
+                var startFrameIndex = startOffset / (pageSize.Height + FrameSpace.Top + FrameSpace.Bottom);
+                var endFrameIndex = (startOffset + height) / (pageSize.Height + FrameSpace.Top + FrameSpace.Bottom);
+
+                var startPageIndex = (int)Math.Min(Math.Max(startFrameIndex, 0), PageCount - 1);
+                var endPageIndex = (int)Math.Min(Math.Max(endFrameIndex, 0), PageCount - 1);
+
+                for (int page = startPageIndex; page <= endPageIndex; page++)
+                {
+                    var frame = Frames[page];
+                    if (IsUserVisible(frame) && frame.Source == null)
+                    {
+                        frame.Source = RenderPageToMemory(page, frame.Width, frame.Height);
+                    }
+                }
+            }
+        }
+
         protected BitmapSource RenderPageToMemory(int page, double width, double height)
         {
             var image = Document.Render(page, (int)width, (int)height, Dpi, Dpi, false);
@@ -164,12 +194,23 @@ namespace PdfiumViewer
             GC.Collect();
             return bs;
         }
+        public static bool IsUserVisible(UIElement element)
+        {
+            if (!element.IsVisible)
+                return false;
+            var container = VisualTreeHelper.GetParent(element) as FrameworkElement;
+            if (container == null) throw new ArgumentNullException(nameof(container));
+
+            Rect bounds = element.TransformToAncestor(container).TransformBounds(new Rect(0.0, 0.0, element.RenderSize.Width, element.RenderSize.Height));
+            Rect rect = new Rect(0.0, 0.0, container.ActualWidth, container.ActualHeight);
+            return rect.IntersectsWith(bounds);
+        }
         public void GotoPage(int page)
         {
             if (IsDocumentLoaded)
             {
                 CurrentPageSize = CalculatePageSize(page);
-                
+
                 Dispatcher.Invoke(() =>
                 {
                     Frame1.Source = RenderPageToMemory(page, CurrentPageSize.Width, CurrentPageSize.Height);
