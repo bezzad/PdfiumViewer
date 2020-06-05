@@ -50,6 +50,7 @@ namespace PdfiumViewer
         protected Image Frame1 => Frames?.FirstOrDefault();
         protected Image Frame2 => Frames?.Length > 1 ? Frames[1] : null;
         protected Image[] Frames { get; set; }
+        protected Size CurrentPageSize { get; set; }
         protected int ScrollWidth { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -103,6 +104,13 @@ namespace PdfiumViewer
                 if (Frames[i] == null)
                     Frames[i] = new Image() { Margin = FrameSpace };
 
+                if (IsDocumentLoaded)
+                {
+                    var pageSize = CalculatePageSize(i);
+                    Frames[i].Width = pageSize.Width;
+                    Frames[i].Height = pageSize.Height;
+                }
+
                 Panel.Children.Add(Frames[i]);
             }
 
@@ -115,6 +123,33 @@ namespace PdfiumViewer
         protected void OnZoomModeChanged()
         {
             GotoPage(PageNo);
+        }
+        protected Size CalculatePageSize(int? page = null)
+        {
+            page ??= PageNo;
+            var containerWidth = ActualWidth; // ViewportWidth
+            var containerHeight = ActualHeight; // ViewportHeight
+
+            if (IsDocumentLoaded)
+            {
+                var currentPageSize = Document.PageSizes[page.Value];
+                var whRatio = currentPageSize.Width / currentPageSize.Height;
+
+                var height = containerHeight;
+                var width = whRatio * height;
+
+                if (ZoomMode == PdfViewerZoomMode.FitWidth)
+                {
+                    width = containerWidth - ScrollWidth;
+                    if (PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode)
+                        width /= 2;
+                    height = (int)(1 / whRatio * width);
+                }
+
+                return new Size((int)width, (int)height);
+            }
+
+            return new Size();
         }
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
@@ -131,38 +166,21 @@ namespace PdfiumViewer
         }
         public void GotoPage(int page)
         {
-            var containerWidth = ActualWidth; // ViewportWidth
-            var containerHeight = ActualHeight; // ViewportHeight
-
             if (IsDocumentLoaded)
             {
-                var currentPageSize = Document.PageSizes[page];
-                var whRatio = currentPageSize.Width / currentPageSize.Height;
-
-                var height = containerHeight;
-                var width = whRatio * height;
-
-                if (ZoomMode == PdfViewerZoomMode.FitWidth)
-                {
-                    width = containerWidth - ScrollWidth;
-                    if (PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode)
-                        width /= 2;
-                    height = (int)(1 / whRatio * width);
-                }
-
+                CurrentPageSize = CalculatePageSize(page);
+                
                 Dispatcher.Invoke(() =>
                 {
-                    if (PagesDisplayMode != PdfViewerPagesDisplayMode.ContinuousMode)
-                        Frame1.Source = RenderPageToMemory(page, width, height);
-                    
-                    if (PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode && page + 1 < Document.PageCount)
-                        Frame2.Source = RenderPageToMemory(page + 1, width, height);
+                    Frame1.Source = RenderPageToMemory(page, CurrentPageSize.Width, CurrentPageSize.Height);
 
-                    else if (PagesDisplayMode == PdfViewerPagesDisplayMode.ContinuousMode)
+                    if (PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode && page + 1 < Document.PageCount)
+                        Frame2.Source = RenderPageToMemory(page + 1, CurrentPageSize.Width, CurrentPageSize.Height);
+
+                    if (PagesDisplayMode == PdfViewerPagesDisplayMode.ContinuousMode)
                     {
-                        Frame1.Source = RenderPageToMemory(page, width, height);
-                        Frame2.Source = RenderPageToMemory(page + 1, width, height);
-                        Frames[3].Source = RenderPageToMemory(page + 3, width, height);
+                        Frame2.Source = RenderPageToMemory(page + 1, CurrentPageSize.Width, CurrentPageSize.Height);
+                        Frames[3].Source = RenderPageToMemory(page + 3, CurrentPageSize.Width, CurrentPageSize.Height);
                     }
                 });
             }
