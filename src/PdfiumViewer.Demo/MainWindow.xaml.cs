@@ -118,12 +118,12 @@ namespace PdfiumViewer.Demo
 
         private void OnRotateLeftClick(object sender, RoutedEventArgs e)
         {
-            Renderer.RotatePage(Renderer.PageNo, PdfRotation.Rotate90);
+            Renderer.Counterclockwise();
         }
 
         private void OnRotateRightClick(object sender, RoutedEventArgs e)
         {
-            Renderer.RotatePage(Renderer.PageNo, PdfRotation.Rotate270);
+            Renderer.ClockwiseRotate();
         }
 
         private void OnFindText(object sender, RoutedEventArgs e)
@@ -192,6 +192,18 @@ namespace PdfiumViewer.Demo
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private void OnTransparent(object sender, RoutedEventArgs e)
+        {
+            if ((Renderer.Flags & PdfRenderFlags.Transparent) != 0)
+            {
+                Renderer.Flags &= ~PdfRenderFlags.Transparent;
+            }
+            else
+            {
+                Renderer.Flags |= PdfRenderFlags.Transparent;
+            }
         }
     }
 }

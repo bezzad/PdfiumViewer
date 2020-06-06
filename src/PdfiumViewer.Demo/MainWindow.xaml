@@ -69,6 +69,9 @@
             </Button>
             <GridSplitter Background="Gray" Width="1" Margin="5,0"/>
 
+            <Button ToolTip="Transparent Page" Click="OnTransparent">
+                <Image Source="Resources/transparent.png" />
+            </Button>
             <Button ToolTip="Show Bookmarks" Click="OnDisplayBookmarks">
                 <Image Source="Resources/show_bookmarks.png" />
             </Button>

@@ -141,17 +141,24 @@ namespace PdfiumViewer
         {
             OnPagesDisplayModeChanged();
         }
+        protected void OnFlagsChanged()
+        {
+            GotoPage(PageNo);
+        }
         protected Size CalculatePageSize(int? page = null)
         {
             page ??= PageNo;
+            var isReverse = (Rotate == PdfRotation.Rotate90 || Rotate == PdfRotation.Rotate270);
             var containerWidth = ActualWidth - Padding.Left - Padding.Right; // ViewportWidth
             var containerHeight = ActualHeight - Padding.Top - Padding.Bottom; // ViewportHeight
 
             if (IsDocumentLoaded)
             {
                 var currentPageSize = Document.PageSizes[page.Value];
-                var whRatio = currentPageSize.Width / currentPageSize.Height;
+                if(isReverse)
+                    currentPageSize = new SizeF(currentPageSize.Height, currentPageSize.Width);
 
+                var whRatio = currentPageSize.Width / currentPageSize.Height;
                 var height = containerHeight;
                 var width = whRatio * height;
 
@@ -162,7 +169,7 @@ namespace PdfiumViewer
                         width /= 2;
                     height = (int)(1 / whRatio * width);
                 }
-
+                
                 return new Size((int)width, (int)height);
             }
 
@@ -398,6 +405,55 @@ namespace PdfiumViewer
             Zoom = Math.Min(Math.Max(Zoom / ZoomFactor, ZoomMin), ZoomMax);
         }
 
+        public void ClockwiseRotate()
+        {
+            // _____
+            //      |
+            //      |
+            //      v
+            // Clockwise
+            
+            switch (Rotate)
+            {
+                case PdfRotation.Rotate0:
+                    RotatePage(PageNo, PdfRotation.Rotate90);
+                    break;
+                case PdfRotation.Rotate90:
+                    RotatePage(PageNo, PdfRotation.Rotate180);
+                    break;
+                case PdfRotation.Rotate180:
+                    RotatePage(PageNo, PdfRotation.Rotate270);
+                    break;
+                case PdfRotation.Rotate270:
+                    RotatePage(PageNo, PdfRotation.Rotate0);
+                    break;
+            }
+        }
+
+        public void Counterclockwise()
+        {
+            //      ^
+            //      |
+            //      |
+            // _____|
+            // Counterclockwise
+
+            switch (Rotate)
+            {
+                case PdfRotation.Rotate0:
+                    RotatePage(PageNo, PdfRotation.Rotate270);
+                    break;
+                case PdfRotation.Rotate90:
+                    RotatePage(PageNo, PdfRotation.Rotate0);
+                    break;
+                case PdfRotation.Rotate180:
+                    RotatePage(PageNo, PdfRotation.Rotate90);
+                    break;
+                case PdfRotation.Rotate270:
+                    RotatePage(PageNo, PdfRotation.Rotate180);
+                    break;
+            }
+        }
 
         #region IPdfDocument implementation
 
@@ -492,16 +548,8 @@ namespace PdfiumViewer
 
         public void RotatePage(int page, PdfRotation rotate)
         {
-            Document.RotatePage(page, rotate);
-
-            // PdfRenderer does not support changes to the loaded document,
-            // so we fake it by reloading the document into the renderer.
-
-            var document = Document;
-            Document = null;
-            document.RotatePage(page, rotate);
-            Document = document;
-            GotoPage(page);
+            Rotate = rotate;
+            OnPagesDisplayModeChanged();
         }
 
         public PdfInformation GetInformation()

@@ -21,6 +21,7 @@
     <None Remove="Resources\rotate_right.png" />
     <None Remove="Resources\show_bookmarks.png" />
     <None Remove="Resources\show_text.png" />
+    <None Remove="Resources\transparent.png" />
     <None Remove="Resources\two_page.png" />
     <None Remove="Resources\zoom_in.png" />
     <None Remove="Resources\zoom_out.png" />
@@ -71,6 +72,7 @@
     <Resource Include="Resources\show_text.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Resources\transparent.png" />
     <Resource Include="Resources\two_page.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
