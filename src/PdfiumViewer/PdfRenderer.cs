@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -45,6 +46,7 @@ namespace PdfiumViewer
             Dpi = 96;
             ScrollWidth = 50;
             FrameSpace = new Thickness(5);
+            RenderedFramesMap = new ConcurrentDictionary<int, Image>();
         }
 
         protected Process CurrentProcess { get; } = Process.GetCurrentProcess();
@@ -54,6 +56,7 @@ namespace PdfiumViewer
         protected Image Frame1 => Frames?.FirstOrDefault();
         protected Image Frame2 => Frames?.Length > 1 ? Frames[1] : null;
         protected Image[] Frames { get; set; }
+        protected ConcurrentDictionary<int, Image> RenderedFramesMap { get; set; }
         protected Size CurrentPageSize { get; set; }
         protected int ScrollWidth { get; set; }
 
@@ -85,7 +88,8 @@ namespace PdfiumViewer
         protected void OnPagesDisplayModeChanged()
         {
             Panel.Children.Clear();
-
+            RenderedFramesMap?.Clear();
+            
             if (PagesDisplayMode == PdfViewerPagesDisplayMode.SinglePageMode)
             {
                 Frames = new Image[1];
@@ -96,7 +100,7 @@ namespace PdfiumViewer
                 Frames = new Image[2];
                 Panel.Orientation = Orientation.Horizontal;
             }
-            else if (IsDocumentLoaded)
+            else if (PagesDisplayMode == PdfViewerPagesDisplayMode.ContinuousMode && IsDocumentLoaded)
             {
                 // frames created at scrolling
                 Frames = new Image[Document.PageCount];
@@ -118,6 +122,9 @@ namespace PdfiumViewer
                 Panel.Children.Add(Frames[i]);
             }
 
+            if(PagesDisplayMode == PdfViewerPagesDisplayMode.ContinuousMode && IsDocumentLoaded)
+                Frames[PageNo].BringIntoView(); // scroll to current page
+
             GC.Collect();
             GotoPage(PageNo);
         }
@@ -126,13 +133,13 @@ namespace PdfiumViewer
         /// </summary>
         protected void OnZoomModeChanged()
         {
-            GotoPage(PageNo);
+            OnPagesDisplayModeChanged();
         }
         protected Size CalculatePageSize(int? page = null)
         {
             page ??= PageNo;
-            var containerWidth = ActualWidth; // ViewportWidth
-            var containerHeight = ActualHeight; // ViewportHeight
+            var containerWidth = ActualWidth - Padding.Left - Padding.Right; // ViewportWidth
+            var containerHeight = ActualHeight - Padding.Top - Padding.Bottom; // ViewportHeight
 
             if (IsDocumentLoaded)
             {
@@ -176,43 +183,36 @@ namespace PdfiumViewer
                 PageNo = (int)Math.Min(Math.Max(startFrameIndex, 0), PageCount - 1);
                 var endPageIndex = (int)Math.Min(Math.Max(endFrameIndex, 0), PageCount - 1);
 
-                ReleaseFrames();
+                ReleaseFrames(PageNo, endPageIndex);
 
                 for (var page = PageNo; page <= endPageIndex; page++)
                 {
                     var frame = Frames[page];
                     if (IsUserVisible(frame) && frame.Source == null)
                     {
-                        frame.Source = RenderPage(page, frame.Width, frame.Height);
+                        RenderPage(frame, page, frame.Width, frame.Height);
+                        RenderedFramesMap.TryAdd(page, frame);
                     }
                 }
             }
         }
 
-        protected void ReleaseFrames()
+        protected void ReleaseFrames(int keepFrom, int keepTo)
         {
-            foreach (var frame in Frames.Where(f => f.Source != null))
+            foreach (var page in RenderedFramesMap.Keys)
             {
-                // if(frame is BitmapImage bi)
-                GC.SuppressFinalize(frame.Source);
-                frame.Source = null;
+                if ((page < keepFrom || page > keepTo) &&
+                    RenderedFramesMap.TryRemove(page, out var frame))
+                {
+                    GC.SuppressFinalize(frame.Source);
+                    frame.Source = null;
+                }
             }
 
             GC.Collect();
         }
-        
-        /// <summary>
-        /// Note: this method have memory lake problem, please use RenderPage method instead of
-        /// </summary>
-        protected BitmapSource RenderPageToMemory(int page, double width, double height)
-        {
-            var image = Document.Render(page, (int)width, (int)height, Dpi, Dpi, false);
-            var bs = image.ToBitmapSource();
-            CurrentProcess?.Refresh();
-            GC.Collect();
-            return bs;
-        }
-        protected BitmapImage RenderPage(int page, double width, double height)
+
+        protected BitmapImage RenderPage(Image frame, int page, double width, double height)
         {
             var image = Document.Render(page, (int)width, (int)height, Dpi, Dpi, false);
             BitmapImage bitmapImage;
@@ -233,6 +233,7 @@ namespace PdfiumViewer
 
             CurrentProcess?.Refresh();
             GC.Collect();
+            Dispatcher.Invoke(() => frame.Source = bitmapImage);
             return bitmapImage;
         }
         public static bool IsUserVisible(UIElement element)
@@ -252,13 +253,12 @@ namespace PdfiumViewer
             {
                 CurrentPageSize = CalculatePageSize(page);
 
-                Dispatcher.Invoke(() =>
-                {
-                    Frame1.Source = RenderPage(page, CurrentPageSize.Width, CurrentPageSize.Height);
+                RenderPage(Frame1, page, CurrentPageSize.Width, CurrentPageSize.Height);
 
-                    if (PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode && page + 1 < Document.PageCount)
-                        Frame2.Source = RenderPage(page + 1, CurrentPageSize.Width, CurrentPageSize.Height);
-                });
+                if (PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode && page + 1 < Document.PageCount)
+                {
+                    RenderPage(Frame2, page + 1, CurrentPageSize.Width, CurrentPageSize.Height);
+                }
             }
         }
         public void OpenPdf(string path)
