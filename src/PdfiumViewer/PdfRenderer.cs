@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
@@ -59,37 +60,41 @@ namespace PdfiumViewer
         protected ConcurrentDictionary<int, Image> RenderedFramesMap { get; set; }
         protected Size CurrentPageSize { get; set; }
         protected int ScrollWidth { get; set; }
+        private bool DoZoom { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
+        public const double DefaultZoomMin = 0.1;
+        public const double DefaultZoomMax = 5;
+        public const double DefaultZoomFactor = 1.2;
         public int PageNo { get; set; }
         public int Dpi { get; set; }
+        /// <summary>
+        /// Gets or sets the current zoom level.
+        /// </summary>
+        [Browsable(false)]
+        [DefaultValue(1.0)]
+        public double Zoom { get; set; }
+        [DefaultValue(DefaultZoomMin)] public double ZoomMin { get; set; }
+        [DefaultValue(DefaultZoomMax)] public double ZoomMax { get; set; }
+        [DefaultValue(DefaultZoomFactor)] public double ZoomFactor { get; set; }
         public PdfViewerZoomMode ZoomMode { get; set; }
         public PdfViewerPagesDisplayMode PagesDisplayMode { get; set; }
         public bool IsDocumentLoaded => Document != null;
 
 
-        /// <summary>
-        /// Note: called by `PropertyChanged.Fody` when PageNo changed
-        /// </summary>
         protected void OnPageNoChanged()
         {
             GotoPage(PageNo);
         }
-        /// <summary>
-        /// Note: called by `PropertyChanged.Fody` when Dpi changed
-        /// </summary>
         protected void OnDpiChanged()
         {
             GotoPage(PageNo);
         }
-        /// <summary>
-        /// Note: called by `PropertyChanged.Fody` when PagesDisplayMode changed
-        /// </summary>
         protected void OnPagesDisplayModeChanged()
         {
             Panel.Children.Clear();
             RenderedFramesMap?.Clear();
-            
+
             if (PagesDisplayMode == PdfViewerPagesDisplayMode.SinglePageMode)
             {
                 Frames = new Image[1];
@@ -122,15 +127,12 @@ namespace PdfiumViewer
                 Panel.Children.Add(Frames[i]);
             }
 
-            if(PagesDisplayMode == PdfViewerPagesDisplayMode.ContinuousMode && IsDocumentLoaded)
+            if (PagesDisplayMode == PdfViewerPagesDisplayMode.ContinuousMode && IsDocumentLoaded)
                 Frames[PageNo].BringIntoView(); // scroll to current page
 
             GC.Collect();
             GotoPage(PageNo);
         }
-        /// <summary>
-        /// Note: called by `PropertyChanged.Fody` when ZoomMode changed
-        /// </summary>
         protected void OnZoomModeChanged()
         {
             OnPagesDisplayModeChanged();
@@ -167,6 +169,38 @@ namespace PdfiumViewer
             base.OnRenderSizeChanged(sizeInfo);
             GotoPage(PageNo);
         }
+        protected override void OnMouseWheel(MouseWheelEventArgs e)
+        {
+            base.OnMouseWheel(e);
+
+            if (DoZoom)
+            {
+                e.Handled = true;
+                if (e.Delta > 0)
+                    ZoomIn();
+                else
+                    ZoomOut();
+            }
+            else if(PagesDisplayMode == PdfViewerPagesDisplayMode.SinglePageMode &&
+                    ViewportHeight > Frame1.Height)
+            {
+                
+            }
+        }
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+
+            if (e.KeyboardDevice.Modifiers == ModifierKeys.Control)
+                DoZoom = true;
+        }
+        protected override void OnKeyUp(KeyEventArgs e)
+        {
+            base.OnKeyUp(e);
+
+            if (e.KeyboardDevice.Modifiers == ModifierKeys.Control)
+                DoZoom = false;
+        }
         protected override void OnScrollChanged(ScrollChangedEventArgs e)
         {
             base.OnScrollChanged(e);
@@ -196,6 +230,7 @@ namespace PdfiumViewer
                 }
             }
         }
+
 
         protected void ReleaseFrames(int keepFrom, int keepTo)
         {
@@ -296,7 +331,43 @@ namespace PdfiumViewer
             Document = PdfDocument.Load(stream, password);
             GotoPage(PageNo = 0);
         }
+        public void NextPage()
+        {
+            if (IsDocumentLoaded)
+            {
+                var extentVal = PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode ? 2 : 1;
+                PageNo = Math.Min(Math.Max(PageNo + extentVal, 0), PageCount - extentVal);
 
+                if (PagesDisplayMode == PdfViewerPagesDisplayMode.ContinuousMode)
+                    Frames[PageNo].BringIntoView(); // scroll to current page
+            }
+        }
+        public void PreviousPage()
+        {
+            if (IsDocumentLoaded)
+            {
+                var extentVal = PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode ? 2 : 1;
+                PageNo = Math.Min(Math.Max(PageNo - extentVal, 0), PageCount - extentVal);
+
+                if (PagesDisplayMode == PdfViewerPagesDisplayMode.ContinuousMode)
+                    Frames[PageNo].BringIntoView(); // scroll to current page
+            }
+        }
+        /// <summary>
+        /// Zooms the PDF document in one step.
+        /// </summary>
+        public void ZoomIn()
+        {
+            Zoom = Math.Min(Math.Max(Zoom * ZoomFactor, ZoomMin), ZoomMax);
+        }
+
+        /// <summary>
+        /// Zooms the PDF document out one step.
+        /// </summary>
+        public void ZoomOut()
+        {
+            Zoom = Math.Min(Math.Max(Zoom / ZoomFactor, ZoomMin), ZoomMax);
+        }
 
 
         #region IPdfDocument implementation

@@ -39,6 +39,7 @@ namespace PdfiumViewer.Demo
 
         private void OnMemoryChecker(object? sender, EventArgs e)
         {
+            CurrentProcess.Refresh();
             InfoText = $"Memory: {CurrentProcess.PrivateMemorySize64 / 1024 / 1024} MB";
             OnPropertyChanged(nameof(InfoText));
         }
@@ -49,14 +50,12 @@ namespace PdfiumViewer.Demo
             try
             {
                 var pageStep = Renderer.PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode ? 2 : 1;
-                await Task.Run(async () =>
+                Dispatcher.Invoke(() => Renderer.PageNo = 0);
+                while (Renderer.PageNo < Renderer.PageCount - pageStep)
                 {
-                    for (Renderer.PageNo = 0; Renderer.PageNo < Renderer.PageCount - pageStep; Renderer.PageNo += pageStep)
-                    {
-                        // Note: No need any code because OnPageNoChanged handler do everything perfectly ;)
-                        await Task.Delay(1);
-                    }
-                });
+                    Dispatcher.Invoke(() => Renderer.NextPage());
+                    await Task.Delay(1);
+                }
             }
             catch (Exception ex)
             {
@@ -111,19 +110,11 @@ namespace PdfiumViewer.Demo
 
         private void OnPrevPageClick(object sender, RoutedEventArgs e)
         {
-            if (Renderer.IsDocumentLoaded)
-            {
-                var extentVal = Renderer.PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode ? 2 : 1;
-                Renderer.PageNo = Math.Min(Math.Max(Renderer.PageNo - extentVal, 0), Renderer.PageCount - 1);
-            }
+            Renderer.PreviousPage();
         }
         private void OnNextPageClick(object sender, RoutedEventArgs e)
         {
-            if (Renderer.IsDocumentLoaded)
-            {
-                var extentVal = Renderer.PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode ? 2 : 1;
-                Renderer.PageNo = Math.Min(Math.Max(Renderer.PageNo + extentVal, 0), Renderer.PageCount - 1);
-            }
+            Renderer.NextPage();
         }
 
         private void OnFitWidth(object sender, RoutedEventArgs e)
@@ -137,12 +128,12 @@ namespace PdfiumViewer.Demo
 
         private void OnZoomInClick(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            Renderer.ZoomIn();
         }
 
         private void OnZoomOutClick(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            Renderer.ZoomOut();
         }
 
         private void OnRotateLeftClick(object sender, RoutedEventArgs e)
