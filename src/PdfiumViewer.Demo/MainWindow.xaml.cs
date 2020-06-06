@@ -143,7 +143,18 @@ namespace PdfiumViewer.Demo
         }
         private void OnInfo(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            var info = Renderer.GetInformation();
+            var sb = new StringBuilder();
+            sb.AppendLine($"Author: {info.Author}");
+            sb.AppendLine($"Creator: {info.Creator}");
+            sb.AppendLine($"Keywords: {info.Keywords}");
+            sb.AppendLine($"Producer: {info.Producer}");
+            sb.AppendLine($"Subject: {info.Subject}");
+            sb.AppendLine($"Title: {info.Title}");
+            sb.AppendLine($"Create Date: {info.CreationDate}");
+            sb.AppendLine($"Modified Date: {info.ModificationDate}");
+
+            MessageBox.Show(sb.ToString(), "Information", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void OnGetText(object sender, RoutedEventArgs e)
