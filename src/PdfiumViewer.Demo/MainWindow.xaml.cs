@@ -159,7 +159,11 @@ namespace PdfiumViewer.Demo
 
         private void OnGetText(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            var txtViewer = new TextViewer();
+            var page = Renderer.PageNo;
+            txtViewer.Body = Renderer.GetPdfText(page);
+            txtViewer.Caption = $"Page {page + 1} contains {txtViewer.Body.Length} character(s):";
+            txtViewer.ShowDialog();
         }
 
         private void OnDisplayBookmarks(object sender, RoutedEventArgs e)
