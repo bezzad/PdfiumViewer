@@ -43,6 +43,8 @@ namespace PdfiumViewer
             Content = Panel;
 
             ZoomMode = PdfViewerZoomMode.FitHeight;
+            Rotate = PdfRotation.Rotate0;
+            Flags = PdfRenderFlags.None;
             PagesDisplayMode = PdfViewerPagesDisplayMode.SinglePageMode;
             Dpi = 96;
             ScrollWidth = 50;
@@ -78,6 +80,8 @@ namespace PdfiumViewer
         [DefaultValue(DefaultZoomMax)] public double ZoomMax { get; set; }
         [DefaultValue(DefaultZoomFactor)] public double ZoomFactor { get; set; }
         public PdfViewerZoomMode ZoomMode { get; set; }
+        public PdfRenderFlags Flags { get; set; }
+        public PdfRotation Rotate { get; set; }
         public PdfViewerPagesDisplayMode PagesDisplayMode { get; set; }
         public bool IsDocumentLoaded => Document != null;
 
@@ -269,7 +273,7 @@ namespace PdfiumViewer
 
         protected BitmapImage RenderPage(Image frame, int page, double width, double height)
         {
-            var image = Document.Render(page, (int)width, (int)height, Dpi, Dpi, false);
+            var image = Document.Render(page, (int)width, (int)height, Dpi, Dpi, Rotate, Flags);
             BitmapImage bitmapImage;
             using (var memory = new MemoryStream())
             {
@@ -486,9 +490,18 @@ namespace PdfiumViewer
             Document.DeletePage(page);
         }
 
-        public void RotatePage(int page, PdfRotation rotation)
+        public void RotatePage(int page, PdfRotation rotate)
         {
-            Document.RotatePage(page, rotation);
+            Document.RotatePage(page, rotate);
+
+            // PdfRenderer does not support changes to the loaded document,
+            // so we fake it by reloading the document into the renderer.
+
+            var document = Document;
+            Document = null;
+            document.RotatePage(page, rotate);
+            Document = document;
+            GotoPage(page);
         }
 
         public PdfInformation GetInformation()
