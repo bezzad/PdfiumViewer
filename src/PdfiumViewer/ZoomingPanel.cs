@@ -38,6 +38,29 @@ namespace PdfiumViewer
             }
         }
 
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+
+            if (e.KeyboardDevice.Modifiers == ModifierKeys.Control)
+                MouseWheelMode = MouseWheelMode.Zoom;
+
+            switch (e.Key)
+            {
+                case Key.Add:
+                case Key.OemPlus:
+                    if (e.KeyboardDevice.Modifiers == ModifierKeys.Control)
+                        ZoomIn();
+                    return;
+
+                case Key.Subtract:
+                case Key.OemMinus:
+                    if (e.KeyboardDevice.Modifiers == ModifierKeys.Control)
+                        ZoomOut();
+                    return;
+            }
+        }
+
         /// <summary>
         /// Zooms the PDF document in one step.
         /// </summary>

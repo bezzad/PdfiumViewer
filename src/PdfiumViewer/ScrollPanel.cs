@@ -50,7 +50,8 @@ namespace PdfiumViewer
             RenderedFramesMap = new ConcurrentDictionary<int, Image>();
         }
 
-
+        protected const int SmallScrollChange = 1;
+        protected const int LargeScrollChange = 10;
         protected Process CurrentProcess { get; } = Process.GetCurrentProcess();
         protected PdfDocument Document { get; set; }
         protected StackPanel Panel { get; set; }
@@ -248,8 +249,40 @@ namespace PdfiumViewer
         {
             base.OnKeyDown(e);
 
-            if (e.KeyboardDevice.Modifiers == ModifierKeys.Control)
-                MouseWheelMode = MouseWheelMode.Zoom;
+            switch (e.Key)
+            {
+                case Key.Up:
+                    PerformScroll(ScrollAction.LineUp, Orientation.Vertical);
+                    return;
+
+                case Key.Down:
+                    PerformScroll(ScrollAction.LineDown, Orientation.Vertical);
+                    return;
+
+                case Key.Left:
+                    PerformScroll(ScrollAction.LineUp, Orientation.Horizontal);
+                    return;
+
+                case Key.Right:
+                    PerformScroll(ScrollAction.LineDown, Orientation.Horizontal);
+                    return; 
+
+                case Key.PageUp:
+                    PerformScroll(ScrollAction.PageUp, Orientation.Vertical);
+                    return;
+
+                case Key.PageDown:
+                    PerformScroll(ScrollAction.PageDown, Orientation.Vertical);
+                    return;
+
+                case Key.Home:
+                    PerformScroll(ScrollAction.Home, Orientation.Vertical);
+                    return;
+
+                case Key.End:
+                    PerformScroll(ScrollAction.End, Orientation.Vertical);
+                    return;
+            }
         }
         protected override void OnKeyUp(KeyEventArgs e)
         {
@@ -289,6 +322,75 @@ namespace PdfiumViewer
             }
         }
 
+        public void PerformScroll(ScrollAction action, Orientation scrollBar)
+        {
+            if (scrollBar == Orientation.Vertical)
+            {
+                switch (action)
+                {
+                    case ScrollAction.LineUp:
+                        if(VerticalOffset > SmallScrollChange)
+                            ScrollToVerticalOffset(VerticalOffset - SmallScrollChange);
+                        break;
+
+                    case ScrollAction.LineDown:
+                        if (VerticalOffset < ScrollableHeight - SmallScrollChange)
+                            ScrollToVerticalOffset(VerticalOffset + SmallScrollChange);
+                        break;
+
+                    case ScrollAction.PageUp:
+                        if (VerticalOffset > LargeScrollChange)
+                            ScrollToVerticalOffset(VerticalOffset - LargeScrollChange);
+                        break;
+
+                    case ScrollAction.PageDown:
+                        if (VerticalOffset < ScrollableHeight - LargeScrollChange)
+                            ScrollToVerticalOffset(VerticalOffset + LargeScrollChange);
+                        break;
+
+                    case ScrollAction.Home:
+                        ScrollToHome();
+                        break;
+
+                    case ScrollAction.End:
+                        ScrollToEnd();
+                        break;
+                }
+            }
+            else // Horizontal
+            {
+                switch (action)
+                {
+                    case ScrollAction.LineUp:
+                        if (HorizontalOffset > SmallScrollChange)
+                            ScrollToVerticalOffset(HorizontalOffset - SmallScrollChange);
+                        break;
+
+                    case ScrollAction.LineDown:
+                        if (HorizontalOffset < ScrollableHeight - SmallScrollChange)
+                            ScrollToVerticalOffset(HorizontalOffset + SmallScrollChange);
+                        break;
+
+                    case ScrollAction.PageUp:
+                        if (HorizontalOffset > LargeScrollChange)
+                            ScrollToVerticalOffset(HorizontalOffset - LargeScrollChange);
+                        break;
+
+                    case ScrollAction.PageDown:
+                        if (HorizontalOffset < ScrollableHeight - LargeScrollChange)
+                            ScrollToVerticalOffset(HorizontalOffset + LargeScrollChange);
+                        break;
+
+                    case ScrollAction.Home:
+                        ScrollToHome();
+                        break;
+
+                    case ScrollAction.End:
+                        ScrollToEnd();
+                        break;
+                }
+            }
+        }
 
 
         public void GotoPage(int page)
