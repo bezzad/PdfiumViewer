@@ -71,7 +71,7 @@ namespace PdfiumViewer
             return Load(owner, stream, null);
         }
 
-        private static PdfDocument Load(IWin32Window owner, Stream stream, string password)
+        public static PdfDocument Load(IWin32Window owner, Stream stream, string password)
         {
             try
             {

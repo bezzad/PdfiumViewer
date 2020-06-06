@@ -3,12 +3,12 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Input;
-using System.Windows.Media.Imaging;
+using PdfiumViewer.Demo.Annotations;
 
 namespace PdfiumViewer.Demo
 {
@@ -17,57 +17,45 @@ namespace PdfiumViewer.Demo
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        private Process CurrentProcess { get; } = Process.GetCurrentProcess();
+        private Process CurrentProcess { get; }
         private CancellationTokenSource Cts { get; }
-        private PdfDocument Document { get; set; }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        public int PageNo { get; set; }
-        public int Dpi { get; set; }
-        public PdfViewerZoomMode ZoomMode { get; set; }
-        public ICommand GoNextPageCommand { get; set; }
+        private System.Windows.Threading.DispatcherTimer MemoryChecker { get; }
+        public string InfoText { get; set; }
 
 
         public MainWindow()
         {
             InitializeComponent();
 
+            CurrentProcess = Process.GetCurrentProcess();
             Cts = new CancellationTokenSource();
-            ZoomMode = PdfViewerZoomMode.FitHeight;
-            Dpi = 96;
             DataContext = this;
+
+            MemoryChecker = new System.Windows.Threading.DispatcherTimer();
+            MemoryChecker.Tick += OnMemoryChecker;
+            MemoryChecker.Interval = new TimeSpan(0, 0, 1);
+            MemoryChecker.Start();
         }
 
-        // Note: called by `PropertyChanged.Fody` when PageNo changed
-        protected void OnPageNoChanged()
+        private void OnMemoryChecker(object? sender, EventArgs e)
         {
-            GotoPage(PageNo);
+            CurrentProcess.Refresh();
+            InfoText = $"Memory: {CurrentProcess.PrivateMemorySize64 / 1024 / 1024} MB";
+            OnPropertyChanged(nameof(InfoText));
         }
+
+
         private async void RenderToMemory(object sender, RoutedEventArgs e)
         {
-            if (Document == null)
-            {
-                MessageBox.Show("First load the document");
-                return;
-            }
-
-            var sw = new Stopwatch();
-            sw.Start();
-
             try
             {
-                await Task.Run(async () =>
+                var pageStep = Renderer.PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode ? 2 : 1;
+                Dispatcher.Invoke(() => Renderer.PageNo = 0);
+                while (Renderer.PageNo < Renderer.PageCount - pageStep)
                 {
-                    for (PageNo = 0; PageNo < Document.PageCount - 1; PageNo++)
-                    {
-                        // Note: No need any code because OnPageNoChanged handler do everything perfectly ;)
-                        await Dispatcher.InvokeAsync(() =>
-                            Title = $"Renderd Pages: {PageNo}, " +
-                                    $"Memory: {CurrentProcess.PrivateMemorySize64 / (1920 * 1080)} MB, " +
-                                    $"Time: {sw.Elapsed.TotalSeconds:0.0} sec");
-                        await Task.Delay(1);
-                    }
-                });
+                    Dispatcher.Invoke(() => Renderer.NextPage());
+                    await Task.Delay(1);
+                }
             }
             catch (Exception ex)
             {
@@ -75,18 +63,8 @@ namespace PdfiumViewer.Demo
                 Debug.Fail(ex.Message);
                 MessageBox.Show(this, ex.Message, "Error!");
             }
+        }
 
-            sw.Stop();
-            Title = $"Rendered {Document.PageCount} Pages within {sw.Elapsed.TotalSeconds:0.0} seconds, Memory: {CurrentProcess.PrivateMemorySize64 / (1024 * 1024)} MB";
-        }
-        private BitmapSource RenderPageToMemory(int page, int width, int height)
-        {
-            var image = Document.Render(page, width, height, Dpi, Dpi, false);
-            var bs = BitmapHelper.ToBitmapSource(image);
-            CurrentProcess?.Refresh();
-            GC.Collect();
-            return bs;
-        }
         private void OpenPdf(object sender, RoutedEventArgs e)
         {
             var dialog = new OpenFileDialog
@@ -99,84 +77,133 @@ namespace PdfiumViewer.Demo
             {
                 var bytes = File.ReadAllBytes(dialog.FileName);
                 var mem = new MemoryStream(bytes);
-                Document = PdfDocument.Load(mem);
-                PageNo = 0;
-                GotoPage(PageNo);
+                Renderer.OpenPdf(mem);
             }
         }
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
 
-            Document?.Dispose();
+            MemoryChecker?.Stop();
+            Renderer?.Dispose();
         }
-        private void DoSearch_Click(object sender, RoutedEventArgs e)
+
+        private void OnPrevPageClick(object sender, RoutedEventArgs e)
+        {
+            Renderer.PreviousPage();
+        }
+        private void OnNextPageClick(object sender, RoutedEventArgs e)
+        {
+            Renderer.NextPage();
+        }
+
+        private void OnFitWidth(object sender, RoutedEventArgs e)
+        {
+            Renderer.ZoomMode = PdfViewerZoomMode.FitWidth;
+        }
+        private void OnFitHeight(object sender, RoutedEventArgs e)
+        {
+            Renderer.ZoomMode = PdfViewerZoomMode.FitHeight;
+        }
+
+        private void OnZoomInClick(object sender, RoutedEventArgs e)
+        {
+            Renderer.ZoomIn();
+        }
+
+        private void OnZoomOutClick(object sender, RoutedEventArgs e)
+        {
+            Renderer.ZoomOut();
+        }
+
+        private void OnRotateLeftClick(object sender, RoutedEventArgs e)
+        {
+            Renderer.Counterclockwise();
+        }
+
+        private void OnRotateRightClick(object sender, RoutedEventArgs e)
+        {
+            Renderer.ClockwiseRotate();
+        }
+
+        private void OnFindText(object sender, RoutedEventArgs e)
         {
             // string text = searchValueTextBox.Text;
             // bool matchCase = matchCaseCheckBox.IsChecked.GetValueOrDefault();
             // bool wholeWordOnly = wholeWordOnlyCheckBox.IsChecked.GetValueOrDefault();
             //
-            // DoSearch(text, matchCase, wholeWordOnly);
+
+            // var matches = Renderer.Search(text, matchCase, wholeWord);
+            // var sb = new StringBuilder();
+            //
+            // foreach (var match in matches.Items)
+            // {
+            //     sb.AppendLine($"Found \"{match.Text}\" in page: {match.Page}");
+            // }
         }
-        private void DoSearch(string text, bool matchCase, bool wholeWord)
+        private void OnInfo(object sender, RoutedEventArgs e)
         {
-            var matches = Document.Search(text, matchCase, wholeWord);
+            var info = Renderer.GetInformation();
             var sb = new StringBuilder();
+            sb.AppendLine($"Author: {info.Author}");
+            sb.AppendLine($"Creator: {info.Creator}");
+            sb.AppendLine($"Keywords: {info.Keywords}");
+            sb.AppendLine($"Producer: {info.Producer}");
+            sb.AppendLine($"Subject: {info.Subject}");
+            sb.AppendLine($"Title: {info.Title}");
+            sb.AppendLine($"Create Date: {info.CreationDate}");
+            sb.AppendLine($"Modified Date: {info.ModificationDate}");
 
-            foreach (var match in matches.Items)
+            MessageBox.Show(sb.ToString(), "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void OnGetText(object sender, RoutedEventArgs e)
+        {
+            var txtViewer = new TextViewer();
+            var page = Renderer.PageNo;
+            txtViewer.Body = Renderer.GetPdfText(page);
+            txtViewer.Caption = $"Page {page + 1} contains {txtViewer.Body.Length} character(s):";
+            txtViewer.ShowDialog();
+        }
+
+        private void OnDisplayBookmarks(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void OnContinuousModeClick(object sender, RoutedEventArgs e)
+        {
+            Renderer.PagesDisplayMode = PdfViewerPagesDisplayMode.ContinuousMode;
+        }
+
+        private void OnBookModeClick(object sender, RoutedEventArgs e)
+        {
+            Renderer.PagesDisplayMode = PdfViewerPagesDisplayMode.BookMode;
+        }
+
+        private void OnSinglePageModeClick(object sender, RoutedEventArgs e)
+        {
+            Renderer.PagesDisplayMode = PdfViewerPagesDisplayMode.SinglePageMode;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private void OnTransparent(object sender, RoutedEventArgs e)
+        {
+            if ((Renderer.Flags & PdfRenderFlags.Transparent) != 0)
             {
-                sb.AppendLine($"Found \"{match.Text}\" in page: {match.Page}");
+                Renderer.Flags &= ~PdfRenderFlags.Transparent;
             }
-
-            //searchResultLabel.Text = sb.ToString();
-        }
-        private void GotoPage(int page)
-        {
-            if (Document != null)
+            else
             {
-                var actualHeight = (int)this.ActualHeight - 100;
-                var actualWidth = (int)this.ActualWidth - 50;
-                var currentPageSize = Document.PageSizes[page];
-                var whRatio = currentPageSize.Width / currentPageSize.Height;
-
-                var height = actualHeight;
-                var width = (int)(whRatio * actualHeight);
-
-                if (ZoomMode == PdfViewerZoomMode.FitWidth)
-                {
-                    width = actualWidth;
-                    height = (int)(1 / whRatio * actualWidth);
-                }
-
-                Dispatcher.Invoke(() => imageMemDC.Source = RenderPageToMemory(page, width, height));
+                Renderer.Flags |= PdfRenderFlags.Transparent;
             }
-        }
-
-        private void OnPrevPageClick(object sender, RoutedEventArgs e)
-        {
-            PageNo = Math.Min(Math.Max(PageNo - 1, 0), Document.PageCount - 1);
-        }
-        private void OnNextPageClick(object sender, RoutedEventArgs e)
-        {
-            PageNo = Math.Min(Math.Max(PageNo + 1, 0), Document.PageCount - 1);
-        }
-
-        private void OnFitWidth(object sender, RoutedEventArgs e)
-        {
-            ZoomMode = PdfViewerZoomMode.FitWidth;
-            GotoPage(PageNo);
-        }
-        private void OnFitHeight(object sender, RoutedEventArgs e)
-        {
-            ZoomMode = PdfViewerZoomMode.FitHeight;
-            GotoPage(PageNo);
-        }
-
-        protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
-        {
-            base.OnRenderSizeChanged(sizeInfo);
-
-            GotoPage(PageNo);
         }
     }
 }
