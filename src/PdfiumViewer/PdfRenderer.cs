@@ -185,6 +185,8 @@ namespace PdfiumViewer
                 }
                 else if (PagesDisplayMode != PdfViewerPagesDisplayMode.ContinuousMode)
                 {
+                    var pageStep = PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode ? 2 : 1;
+
                     if (ViewportHeight > Frame1.ActualHeight)
                     {
                         if (e.Delta > 0) // prev page
@@ -192,7 +194,7 @@ namespace PdfiumViewer
                         else
                             NextPage();
                     }
-                    else if (e.Delta < 0 && VerticalOffset >= ScrollableHeight && PageNo < PageCount - 1)
+                    else if (e.Delta < 0 && VerticalOffset >= ScrollableHeight && PageNo < PageCount - pageStep)
                     {
                         NextPage();
                         ScrollToVerticalOffset(0);
