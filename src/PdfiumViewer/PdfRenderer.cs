@@ -173,18 +173,36 @@ namespace PdfiumViewer
         {
             base.OnMouseWheel(e);
 
-            if (DoZoom)
+            if (IsDocumentLoaded)
             {
-                e.Handled = true;
-                if (e.Delta > 0)
-                    ZoomIn();
-                else
-                    ZoomOut();
-            }
-            else if(PagesDisplayMode == PdfViewerPagesDisplayMode.SinglePageMode &&
-                    ViewportHeight > Frame1.Height)
-            {
-                
+                if (DoZoom)
+                {
+                    e.Handled = true;
+                    if (e.Delta > 0)
+                        ZoomIn();
+                    else
+                        ZoomOut();
+                }
+                else if (PagesDisplayMode != PdfViewerPagesDisplayMode.ContinuousMode)
+                {
+                    if (ViewportHeight > Frame1.ActualHeight)
+                    {
+                        if (e.Delta > 0) // prev page
+                            PreviousPage();
+                        else
+                            NextPage();
+                    }
+                    else if (e.Delta < 0 && VerticalOffset >= ScrollableHeight && PageNo < PageCount - 1)
+                    {
+                        NextPage();
+                        ScrollToVerticalOffset(0);
+                    }
+                    else if (e.Delta > 0 && VerticalOffset <= 0 && PageNo > 0)
+                    {
+                        PreviousPage();
+                        ScrollToVerticalOffset(ScrollableHeight);
+                    }
+                }
             }
         }
         protected override void OnKeyDown(KeyEventArgs e)
@@ -268,7 +286,12 @@ namespace PdfiumViewer
 
             CurrentProcess?.Refresh();
             GC.Collect();
-            Dispatcher.Invoke(() => frame.Source = bitmapImage);
+            Dispatcher.Invoke(() =>
+            {
+                frame.Width = width;
+                frame.Height = height;
+                frame.Source = bitmapImage;
+            });
             return bitmapImage;
         }
         public static bool IsUserVisible(UIElement element)
