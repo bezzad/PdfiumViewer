@@ -87,26 +87,6 @@ namespace PdfiumViewer.Demo
             MemoryChecker?.Stop();
             Renderer?.Dispose();
         }
-        private void DoSearch_Click(object sender, RoutedEventArgs e)
-        {
-            // string text = searchValueTextBox.Text;
-            // bool matchCase = matchCaseCheckBox.IsChecked.GetValueOrDefault();
-            // bool wholeWordOnly = wholeWordOnlyCheckBox.IsChecked.GetValueOrDefault();
-            //
-            // DoSearch(text, matchCase, wholeWordOnly);
-        }
-        private void DoSearch(string text, bool matchCase, bool wholeWord)
-        {
-            var matches = Renderer.Search(text, matchCase, wholeWord);
-            var sb = new StringBuilder();
-
-            foreach (var match in matches.Items)
-            {
-                sb.AppendLine($"Found \"{match.Text}\" in page: {match.Page}");
-            }
-
-            //searchResultLabel.Text = sb.ToString();
-        }
 
         private void OnPrevPageClick(object sender, RoutedEventArgs e)
         {
@@ -138,19 +118,29 @@ namespace PdfiumViewer.Demo
 
         private void OnRotateLeftClick(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            Renderer.RotatePage(Renderer.PageNo, PdfRotation.Rotate90);
         }
 
         private void OnRotateRightClick(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            Renderer.RotatePage(Renderer.PageNo, PdfRotation.Rotate270);
         }
 
         private void OnFindText(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
-        }
+            // string text = searchValueTextBox.Text;
+            // bool matchCase = matchCaseCheckBox.IsChecked.GetValueOrDefault();
+            // bool wholeWordOnly = wholeWordOnlyCheckBox.IsChecked.GetValueOrDefault();
+            //
 
+            // var matches = Renderer.Search(text, matchCase, wholeWord);
+            // var sb = new StringBuilder();
+            //
+            // foreach (var match in matches.Items)
+            // {
+            //     sb.AppendLine($"Found \"{match.Text}\" in page: {match.Page}");
+            // }
+        }
         private void OnInfo(object sender, RoutedEventArgs e)
         {
             throw new NotImplementedException();
