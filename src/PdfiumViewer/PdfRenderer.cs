@@ -255,7 +255,7 @@ namespace PdfiumViewer
                     var frame = Frames[page];
                     if (IsUserVisible(frame) && frame.Source == null)
                     {
-                        RenderPage(frame, page, frame.Width, frame.Height);
+                        RenderPage(frame, page, (int)frame.Width, (int)frame.Height);
                         RenderedFramesMap.TryAdd(page, frame);
                     }
                 }
@@ -278,9 +278,9 @@ namespace PdfiumViewer
             GC.Collect();
         }
 
-        protected BitmapImage RenderPage(Image frame, int page, double width, double height)
+        protected BitmapImage RenderPage(Image frame, int page, int width, int height)
         {
-            var image = Document.Render(page, (int)width, (int)height, Dpi, Dpi, Rotate, Flags);
+            var image = Document.Render(page, width, height, Dpi, Dpi, Rotate, Flags);
             BitmapImage bitmapImage;
             using (var memory = new MemoryStream())
             {
