@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Windows.Interop;
 
 namespace PdfiumViewer
 {
@@ -13,21 +12,6 @@ namespace PdfiumViewer
         public void OpenPdf(string path, string password)
         {
             Document = PdfDocument.Load(path, password);
-            GotoPage(PageNo = 0);
-        }
-        public void OpenPdf(IWin32Window owner, string path)
-        {
-            Document = PdfDocument.Load(owner, path);
-            GotoPage(PageNo = 0);
-        }
-        public void OpenPdf(IWin32Window owner, Stream stream)
-        {
-            Document = PdfDocument.Load(owner, stream);
-            GotoPage(PageNo = 0);
-        }
-        public void OpenPdf(IWin32Window owner, Stream stream, string password)
-        {
-            Document = PdfDocument.Load(owner, stream, password);
             GotoPage(PageNo = 0);
         }
         public void OpenPdf(Stream stream)

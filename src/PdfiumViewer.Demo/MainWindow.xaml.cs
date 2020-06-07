@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 
 namespace PdfiumViewer.Demo
 {
@@ -19,10 +20,13 @@ namespace PdfiumViewer.Demo
     {
         private Process CurrentProcess { get; }
         private CancellationTokenSource Cts { get; }
+        private PdfMatches SearchMatches { get; set; }
         private System.Windows.Threading.DispatcherTimer MemoryChecker { get; }
         public string InfoText { get; set; }
         public string SearchTerm { get; set; }
         public bool IsSearchOpen { get; set; }
+        public int SearchMatchItemNo { get; set; }
+        public int SearchMatchesCount { get; set; }
         public int Page
         {
             get => Renderer.PageNo + 1;
@@ -199,25 +203,33 @@ namespace PdfiumViewer.Demo
             }
         }
 
-        private void OnSearchTermChanged()
+        private void OpenCloseSearch(object sender, RoutedEventArgs e)
+        {
+            IsSearchOpen = !IsSearchOpen;
+            OnPropertyChanged(nameof(IsSearchOpen));
+        }
+
+        private void OnSearchTermKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                Search();
+            }
+        }
+
+        private void Search()
         {
             var matchCase = MatchCaseCheckBox.IsChecked.GetValueOrDefault();
             var wholeWordOnly = WholeWordOnlyCheckBox.IsChecked.GetValueOrDefault();
 
 
-            var matches = Renderer.Search(SearchTerm, matchCase, wholeWordOnly);
-            var sb = new StringBuilder();
-
-            foreach (var match in matches.Items)
+            SearchMatches = Renderer.Search(SearchTerm, matchCase, wholeWordOnly);
+            SearchMatchesCount = SearchMatches.Items.Count;
+            SearchMatchesTextBlock.Visibility = Visibility.Visible;
+            foreach (var match in SearchMatches.Items)
             {
-                sb.AppendLine($"Found \"{match.Text}\" in page: {match.Page}");
+                
             }
-        }
-
-        private void OpenCloseSearch(object sender, RoutedEventArgs e)
-        {
-            IsSearchOpen = !IsSearchOpen;
-            OnPropertyChanged(nameof(IsSearchOpen));
         }
     }
 }

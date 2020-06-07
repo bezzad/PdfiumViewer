@@ -24,8 +24,7 @@
             <Button x:Name="BtnSearch" ToolTip="Search term" Click="OpenCloseSearch">
                 <Image Source="Resources/find.png" />
             </Button>
-            <Popup IsOpen = "{Binding IsSearchOpen}" 
-                   StaysOpen="True"
+            <Popup IsOpen="{Binding IsSearchOpen}" 
                    Placement="Bottom"
                    PlacementRectangle="0,20,0,20"
                    PlacementTarget = "{Binding ElementName=BtnSearch}"
@@ -41,7 +40,8 @@
                             <TextBox x:Name="SearchTermTextBox" Height="30" Width="140"  
                                      VerticalAlignment="Center" VerticalContentAlignment="Center" 
                                      HorizontalAlignment="Left"  Margin="5"
-                                     Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"/>
+                                     Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"
+                                     KeyDown="OnSearchTermKeyDown"/>
                             <TextBlock IsHitTestVisible="False" Width="140" Text="Find in document..." VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" Foreground="DarkGray">
                                 <TextBlock.Style>
                                     <Style TargetType="{x:Type TextBlock}">
@@ -61,9 +61,15 @@
                         <Button ToolTip="Previous Page" Click="OnPrevPageClick" Background="Transparent" BorderThickness="0" Width="30">
                             <Image Source="Resources/next.png" />
                         </Button>
-                        <CheckBox Name="HighlightAllCheckBox" VerticalContentAlignment="Center" Margin="5">Highlight all</CheckBox>
                         <CheckBox Name="MatchCaseCheckBox" VerticalContentAlignment="Center" Margin="5">Match case</CheckBox>
                         <CheckBox Name="WholeWordOnlyCheckBox" VerticalContentAlignment="Center" Margin="5">Whole words</CheckBox>
+                        <TextBlock x:Name="SearchMatchesTextBlock" Background="LightCyan" Visibility="Collapsed" 
+                                   VerticalAlignment="Center" Margin="5" Padding="10">
+                            <Run Text="{Binding SearchMatchItemNo, Mode=OneWay}" />
+                            <Run Text=" of " />
+                            <Run Text="{Binding SearchMatchesCount, Mode=OneWay}" />
+                            <Run Text=" matches" />
+                        </TextBlock>
                     </StackPanel>
                 </Border>
             </Popup>
