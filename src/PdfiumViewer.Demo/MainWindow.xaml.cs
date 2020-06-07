@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using PdfiumViewer.Demo.Annotations;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -8,7 +9,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using PdfiumViewer.Demo.Annotations;
 
 namespace PdfiumViewer.Demo
 {
@@ -21,6 +21,13 @@ namespace PdfiumViewer.Demo
         private CancellationTokenSource Cts { get; }
         private System.Windows.Threading.DispatcherTimer MemoryChecker { get; }
         public string InfoText { get; set; }
+        public string SearchTerm { get; set; }
+        public bool IsSearchOpen { get; set; }
+        public int Page
+        {
+            get => Renderer.PageNo + 1;
+            set => Renderer.PageNo = Math.Min(Math.Max(value - 1, 0), Renderer.PageCount - 1);
+        }
 
 
         public MainWindow()
@@ -30,6 +37,7 @@ namespace PdfiumViewer.Demo
             CurrentProcess = Process.GetCurrentProcess();
             Cts = new CancellationTokenSource();
             DataContext = this;
+            Renderer.PropertyChanged += delegate { OnPropertyChanged(nameof(Page)); };
 
             MemoryChecker = new System.Windows.Threading.DispatcherTimer();
             MemoryChecker.Tick += OnMemoryChecker;
@@ -126,21 +134,6 @@ namespace PdfiumViewer.Demo
             Renderer.ClockwiseRotate();
         }
 
-        private void OnFindText(object sender, RoutedEventArgs e)
-        {
-            // string text = searchValueTextBox.Text;
-            // bool matchCase = matchCaseCheckBox.IsChecked.GetValueOrDefault();
-            // bool wholeWordOnly = wholeWordOnlyCheckBox.IsChecked.GetValueOrDefault();
-            //
-
-            // var matches = Renderer.Search(text, matchCase, wholeWord);
-            // var sb = new StringBuilder();
-            //
-            // foreach (var match in matches.Items)
-            // {
-            //     sb.AppendLine($"Found \"{match.Text}\" in page: {match.Page}");
-            // }
-        }
         private void OnInfo(object sender, RoutedEventArgs e)
         {
             var info = Renderer.GetInformation();
@@ -204,6 +197,27 @@ namespace PdfiumViewer.Demo
             {
                 Renderer.Flags |= PdfRenderFlags.Transparent;
             }
+        }
+
+        private void OnSearchTermChanged()
+        {
+            var matchCase = MatchCaseCheckBox.IsChecked.GetValueOrDefault();
+            var wholeWordOnly = WholeWordOnlyCheckBox.IsChecked.GetValueOrDefault();
+
+
+            var matches = Renderer.Search(SearchTerm, matchCase, wholeWordOnly);
+            var sb = new StringBuilder();
+
+            foreach (var match in matches.Items)
+            {
+                sb.AppendLine($"Found \"{match.Text}\" in page: {match.Page}");
+            }
+        }
+
+        private void OpenCloseSearch(object sender, RoutedEventArgs e)
+        {
+            IsSearchOpen = !IsSearchOpen;
+            OnPropertyChanged(nameof(IsSearchOpen));
         }
     }
 }
