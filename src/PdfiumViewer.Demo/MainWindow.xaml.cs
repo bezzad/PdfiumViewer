@@ -228,7 +228,54 @@ namespace PdfiumViewer.Demo
             SearchMatchesTextBlock.Visibility = Visibility.Visible;
             foreach (var match in SearchMatches.Items)
             {
-                
+
+            }
+        }
+
+        private void SaveAsImages(object sender, RoutedEventArgs e)
+        {
+            // Create a "Save As" dialog for selecting a directory (HACK)
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = "Select a Directory",
+                Filter = "Directory|*.this.directory",
+                FileName = "select"
+            };
+            // instead of default "Save As"
+            // Prevents displaying files
+            // Filename will then be "select.this.directory"
+            if (dialog.ShowDialog() == true)
+            {
+                string path = dialog.FileName;
+                // Remove fake filename from resulting path
+                path = path.Replace("\\select.this.directory", "");
+                path = path.Replace(".this.directory", "");
+                // If user has changed the filename, create the new directory
+                if (!System.IO.Directory.Exists(path))
+                {
+                    System.IO.Directory.CreateDirectory(path);
+                }
+                // Our final value is in path
+                SaveAsImages(path);
+            }
+        }
+
+        private void SaveAsImages(string path)
+        {
+            try
+            {
+                for (var i = 0; i < Renderer.PageCount; i++)
+                {
+                    var size = Renderer.Document.PageSizes[i];
+                    var image = Renderer.Document.Render(i, (int)size.Width * 5, (int)size.Height * 5, 300, 300, false);
+                    image.Save(Path.Combine(path, $"img{i}.png"));
+                }
+            }
+            catch (Exception ex)
+            {
+                Cts.Cancel();
+                Debug.Fail(ex.Message);
+                MessageBox.Show(this, ex.Message, "Error!");
             }
         }
     }

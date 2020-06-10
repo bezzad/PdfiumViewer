@@ -50,10 +50,10 @@ namespace PdfiumViewer
             RenderedFramesMap = new ConcurrentDictionary<int, Image>();
         }
 
+
         protected const int SmallScrollChange = 1;
         protected const int LargeScrollChange = 10;
         protected Process CurrentProcess { get; } = Process.GetCurrentProcess();
-        protected PdfDocument Document { get; set; }
         protected StackPanel Panel { get; set; }
         protected Thickness FrameSpace { get; set; }
         protected Image Frame1 => Frames?.FirstOrDefault();
@@ -64,6 +64,7 @@ namespace PdfiumViewer
         protected int ScrollWidth { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
+        public PdfDocument Document { get; set; }
         public int PageNo { get; set; }
         public int Dpi { get; set; }
         public PdfViewerZoomMode ZoomMode { get; set; }

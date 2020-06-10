@@ -18,6 +18,9 @@
             <Button ToolTip="Open Pdf" Click="OpenPdf">
                 <Image Source="Resources/open_pdf.png" />
             </Button>
+            <Button ToolTip="Save as Images" Click="SaveAsImages">
+                <Image Source="Resources/save.png" />
+            </Button>
             <Button ToolTip="Render all pages" Click="RenderToMemory">
                 <Image Source="Resources/render_all_pages.png" />
             </Button>
