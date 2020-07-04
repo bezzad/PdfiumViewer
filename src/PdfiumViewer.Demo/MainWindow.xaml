@@ -109,6 +109,12 @@
             <Button ToolTip="Zoom out" Click="OnZoomOutClick">
                 <Image Source="Resources/zoom_out.png" />
             </Button>
+            <TextBox x:Name="TxtZoomPercent" Width="50" Text="{Binding ZoomPercent, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" Background="Bisque" >
+                <b:Interaction.Behaviors>
+                    <converters:AllowableCharactersTextBoxBehavior RegularExpression="^[0-9.\-]+$" MaxLength="7" />
+                </b:Interaction.Behaviors>
+            </TextBox>
+            <TextBlock VerticalAlignment="Center" FontSize="14" Text="%" />
             <GridSplitter Background="Gray" Width="1" Margin="5,0"/>
 
             <Button ToolTip="Single Page Mode" Click="OnSinglePageModeClick">

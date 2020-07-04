@@ -24,6 +24,12 @@ namespace PdfiumViewer.Demo
         private System.Windows.Threading.DispatcherTimer MemoryChecker { get; }
         public string InfoText { get; set; }
         public string SearchTerm { get; set; }
+        
+        public double ZoomPercent
+        {
+            get => Renderer.Zoom * 100;
+            set => Renderer.SetZoom(value / 100);
+        }
         public bool IsSearchOpen { get; set; }
         public int SearchMatchItemNo { get; set; }
         public int SearchMatchesCount { get; set; }
@@ -49,7 +55,7 @@ namespace PdfiumViewer.Demo
             MemoryChecker.Start();
         }
 
-        private void OnMemoryChecker(object? sender, EventArgs e)
+        private void OnMemoryChecker(object sender, EventArgs e)
         {
             CurrentProcess.Refresh();
             InfoText = $"Memory: {CurrentProcess.PrivateMemorySize64 / 1024 / 1024} MB";
@@ -191,6 +197,11 @@ namespace PdfiumViewer.Demo
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        protected void OnZoomPercentChanged()
+        {
+            Renderer.SetZoom(ZoomPercent/100); 
+        }
+        
         private void OnTransparent(object sender, RoutedEventArgs e)
         {
             if ((Renderer.Flags & PdfRenderFlags.Transparent) != 0)
@@ -207,7 +218,7 @@ namespace PdfiumViewer.Demo
         {
             IsSearchOpen = !IsSearchOpen;
             OnPropertyChanged(nameof(IsSearchOpen));
-        }
+        } 
 
         private void OnSearchTermKeyDown(object sender, KeyEventArgs e)
         {

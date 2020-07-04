@@ -6,6 +6,15 @@ namespace PdfiumViewer
 {
     public class ZoomingPanel : ScrollPanel
     {
+        public ZoomingPanel()
+        {
+            Zoom = 1;
+            ZoomMin = DefaultZoomMin;
+            ZoomMax = DefaultZoomMax;
+            ZoomFactor = DefaultZoomFactor;
+        }
+        
+        
         public const double DefaultZoomMin = 0.1;
         public const double DefaultZoomMax = 5;
         public const double DefaultZoomFactor = 1.2;
@@ -61,12 +70,20 @@ namespace PdfiumViewer
             }
         }
 
+        protected override void OnKeyUp(KeyEventArgs e)
+        {
+            base.OnKeyUp(e);
+            
+            if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
+                MouseWheelMode = MouseWheelMode.PanAndZoom;
+        }
+
         /// <summary>
         /// Zooms the PDF document in one step.
         /// </summary>
         public void ZoomIn()
         {
-            Zoom = Math.Min(Math.Max(Zoom * ZoomFactor, ZoomMin), ZoomMax);
+            SetZoom(Zoom * ZoomFactor);
         }
 
         /// <summary>
@@ -74,7 +91,12 @@ namespace PdfiumViewer
         /// </summary>
         public void ZoomOut()
         {
-            Zoom = Math.Min(Math.Max(Zoom / ZoomFactor, ZoomMin), ZoomMax);
+            SetZoom(Zoom / ZoomFactor);
+        }
+
+        public void SetZoom(double zoom)
+        {
+            Zoom = Math.Min(Math.Max(zoom, ZoomMin), ZoomMax);
         }
     }
 }
