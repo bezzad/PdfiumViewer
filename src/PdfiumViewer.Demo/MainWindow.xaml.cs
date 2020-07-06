@@ -4,6 +4,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -24,7 +25,7 @@ namespace PdfiumViewer.Demo
         private System.Windows.Threading.DispatcherTimer MemoryChecker { get; }
         public string InfoText { get; set; }
         public string SearchTerm { get; set; }
-        
+
         public double ZoomPercent
         {
             get => Renderer.Zoom * 100;
@@ -197,11 +198,7 @@ namespace PdfiumViewer.Demo
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        protected void OnZoomPercentChanged()
-        {
-            Renderer.SetZoom(ZoomPercent/100); 
-        }
-        
+
         private void OnTransparent(object sender, RoutedEventArgs e)
         {
             if ((Renderer.Flags & PdfRenderFlags.Transparent) != 0)
@@ -218,7 +215,7 @@ namespace PdfiumViewer.Demo
         {
             IsSearchOpen = !IsSearchOpen;
             OnPropertyChanged(nameof(IsSearchOpen));
-        } 
+        }
 
         private void OnSearchTermKeyDown(object sender, KeyEventArgs e)
         {
@@ -237,10 +234,14 @@ namespace PdfiumViewer.Demo
             SearchMatches = Renderer.Search(SearchTerm, matchCase, wholeWordOnly);
             SearchMatchesCount = SearchMatches.Items.Count;
             SearchMatchesTextBlock.Visibility = Visibility.Visible;
-            foreach (var match in SearchMatches.Items)
-            {
+            if (SearchMatches.Items.Any())
+                DisplayTextSpan(SearchMatches.Items.First().TextSpan);
+        }
 
-            }
+        private void DisplayTextSpan(PdfTextSpan span)
+        {
+            Renderer.GotoPage(span.Page);
+            Renderer.ScrollToVerticalOffset(span.Offset);
         }
 
         private void SaveAsImages(object sender, RoutedEventArgs e)
