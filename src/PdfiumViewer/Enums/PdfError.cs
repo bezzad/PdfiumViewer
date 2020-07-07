@@ -1,6 +1,6 @@
 ﻿#pragma warning disable 1591
 
-namespace PdfiumViewer
+namespace PdfiumViewer.Enums
 {
     public enum PdfError
     {

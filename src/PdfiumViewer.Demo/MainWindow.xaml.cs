@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using PdfiumViewer.Enums;
 
 namespace PdfiumViewer.Demo
 {

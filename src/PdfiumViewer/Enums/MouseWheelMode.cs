@@ -1,4 +1,4 @@
-﻿namespace PdfiumViewer
+﻿namespace PdfiumViewer.Enums
 {
     public enum MouseWheelMode
     {

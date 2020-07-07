@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PdfiumViewer
+namespace PdfiumViewer.Enums
 {
     [Flags]
     public enum PdfViewerPagesDisplayMode

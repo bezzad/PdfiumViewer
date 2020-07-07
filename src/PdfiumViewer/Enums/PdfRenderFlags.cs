@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PdfiumViewer
+namespace PdfiumViewer.Enums
 {
     /// <summary>
     /// Flags that influence the page rendering process.

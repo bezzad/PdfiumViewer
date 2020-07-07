@@ -1,4 +1,6 @@
-﻿namespace PdfiumViewer
+﻿using PdfiumViewer.Enums;
+
+namespace PdfiumViewer
 {
     /// <summary>
     /// Configures the print document.

@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Drawing.Printing;
 using System.IO;
+using PdfiumViewer.Enums;
 
 namespace PdfiumViewer
 {

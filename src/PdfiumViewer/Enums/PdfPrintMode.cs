@@ -1,4 +1,4 @@
-﻿namespace PdfiumViewer
+﻿namespace PdfiumViewer.Enums
 {
     /// <summary>
     /// Specifies the mode in which the document should be printed.

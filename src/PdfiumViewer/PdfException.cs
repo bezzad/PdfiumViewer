@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using PdfiumViewer.Enums;
 
 #pragma warning disable 1591
 

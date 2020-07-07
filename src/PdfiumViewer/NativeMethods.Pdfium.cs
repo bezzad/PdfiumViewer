@@ -2,6 +2,7 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using PdfiumViewer.Enums;
 using PdfiumViewer.Helpers;
 
 #pragma warning disable 1591
