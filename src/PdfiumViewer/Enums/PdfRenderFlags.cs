@@ -1,4 +1,5 @@
 ﻿using System;
+using PdfiumViewer.Core;
 
 namespace PdfiumViewer.Enums
 {

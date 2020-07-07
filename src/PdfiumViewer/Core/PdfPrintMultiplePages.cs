@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Controls;
 
-namespace PdfiumViewer
+namespace PdfiumViewer.Core
 {
     /// <summary>
     /// Configuration for printing multiple PDF pages on a single page.

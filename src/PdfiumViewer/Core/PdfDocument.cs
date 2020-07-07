@@ -10,7 +10,7 @@ using System.Windows.Interop;
 using PdfiumViewer.Drawing;
 using PdfiumViewer.Enums;
 
-namespace PdfiumViewer
+namespace PdfiumViewer.Core
 {
     /// <summary>
     /// Provides functionality to render a PDF document.

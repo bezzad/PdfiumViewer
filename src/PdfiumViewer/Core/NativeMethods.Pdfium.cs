@@ -5,7 +5,7 @@ using System.Text;
 using PdfiumViewer.Enums;
 using PdfiumViewer.Helpers;
 
-namespace PdfiumViewer
+namespace PdfiumViewer.Core
 {
     partial class NativeMethods
     {

@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace PdfiumViewer
+namespace PdfiumViewer.Core
 {
     /// <summary>
     /// Describes a link on a page.

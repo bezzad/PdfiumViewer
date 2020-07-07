@@ -1,12 +1,12 @@
-﻿using Microsoft.Win32.SafeHandles;
-using System;
+﻿using System;
 using System.Drawing;
 using System.IO;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
+using Microsoft.Win32.SafeHandles;
 
-namespace PdfiumViewer
+namespace PdfiumViewer.Core
 {
     internal static partial class NativeMethods
     {

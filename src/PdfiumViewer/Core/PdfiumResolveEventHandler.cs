@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PdfiumViewer
+namespace PdfiumViewer.Core
 {
     public class PdfiumResolveEventArgs : EventArgs
     {

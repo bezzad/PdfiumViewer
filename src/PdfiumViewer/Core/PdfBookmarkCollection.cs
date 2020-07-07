@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 
-namespace PdfiumViewer
+namespace PdfiumViewer.Core
 {
     public class PdfBookmark
     {

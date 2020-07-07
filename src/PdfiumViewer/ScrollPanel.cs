@@ -12,6 +12,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Effects;
 using System.Windows.Media.Imaging;
+using PdfiumViewer.Core;
 using PdfiumViewer.Enums;
 using PdfiumViewer.Helpers;
 using Image = System.Windows.Controls.Image;

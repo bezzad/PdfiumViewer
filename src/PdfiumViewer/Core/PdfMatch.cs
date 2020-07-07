@@ -1,6 +1,6 @@
 ﻿using PdfiumViewer.Drawing;
 
-namespace PdfiumViewer
+namespace PdfiumViewer.Core
 {
     public class PdfMatch
     {

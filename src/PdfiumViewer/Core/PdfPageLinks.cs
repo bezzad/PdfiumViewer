@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace PdfiumViewer
+namespace PdfiumViewer.Core
 {
     /// <summary>
     /// Describes all links on a page.

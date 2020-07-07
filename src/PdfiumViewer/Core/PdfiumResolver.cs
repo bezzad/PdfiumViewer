@@ -1,4 +1,4 @@
-﻿namespace PdfiumViewer
+﻿namespace PdfiumViewer.Core
 {
     public class PdfiumResolver
     {

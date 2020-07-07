@@ -9,7 +9,7 @@ using PdfiumViewer.Drawing;
 using PdfiumViewer.Enums;
 using PdfiumViewer.Helpers;
 
-namespace PdfiumViewer
+namespace PdfiumViewer.Core
 {
     internal class PdfFile : IDisposable
     {

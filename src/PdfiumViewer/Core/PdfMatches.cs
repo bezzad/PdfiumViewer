@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 
 #pragma warning disable 1591
 
-namespace PdfiumViewer
+namespace PdfiumViewer.Core
 {
     public class PdfMatches
     {

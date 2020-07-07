@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PdfiumViewer
+namespace PdfiumViewer.Core
 {
     /// <summary>
     /// Contains text from metadata of the document.

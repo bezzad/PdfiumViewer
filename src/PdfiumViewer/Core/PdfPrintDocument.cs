@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Drawing.Printing;
 using PdfiumViewer.Enums;
 
-namespace PdfiumViewer
+namespace PdfiumViewer.Core
 {
     internal class PdfPrintDocument : PrintDocument
     {

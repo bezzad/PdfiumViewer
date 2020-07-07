@@ -1,4 +1,6 @@
-﻿#pragma warning disable 1591
+﻿using PdfiumViewer.Core;
+
+#pragma warning disable 1591
 
 namespace PdfiumViewer.Enums
 {
