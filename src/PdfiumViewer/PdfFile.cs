@@ -5,6 +5,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using PdfiumViewer.Drawing;
 using PdfiumViewer.Enums;
 using PdfiumViewer.Helpers;
 
@@ -82,7 +83,7 @@ namespace PdfiumViewer
 
             using (var pageData = new PageData(_document, _form, pageNumber))
             {
-                int link = 0;
+                var link = 0;
                 IntPtr annotation;
 
                 while (NativeMethods.FPDFLink_Enumerate(pageData.Page, ref link, out annotation))
@@ -125,10 +126,10 @@ namespace PdfiumViewer
             if (_disposed)
                 throw new ObjectDisposedException(GetType().Name);
 
-            int pageCount = NativeMethods.FPDF_GetPageCount(_document);
+            var pageCount = NativeMethods.FPDF_GetPageCount(_document);
             var result = new List<SizeF>(pageCount);
 
-            for (int i = 0; i < pageCount; i++)
+            for (var i = 0; i < pageCount; i++)
             {
                 result.Add(GetPDFDocInfo(i));
             }
@@ -162,7 +163,7 @@ namespace PdfiumViewer
             // Depending on whether XFA support is built into the PDFium library, the version
             // needs to be 1 or 2. We don't really care, so we just try one or the other.
 
-            for (int i = 1; i <= 2; i++)
+            for (var i = 1; i <= 2; i++)
             {
                 _formCallbacks.version = i;
 
@@ -213,11 +214,11 @@ namespace PdfiumViewer
 
         private string GetBookmarkTitle(IntPtr bookmark)
         {
-            uint length = NativeMethods.FPDF_BookmarkGetTitle(bookmark, null, 0);
-            byte[] buffer = new byte[length];
+            var length = NativeMethods.FPDF_BookmarkGetTitle(bookmark, null, 0);
+            var buffer = new byte[length];
             NativeMethods.FPDF_BookmarkGetTitle(bookmark, buffer, length);
 
-            string result = Encoding.Unicode.GetString(buffer);
+            var result = Encoding.Unicode.GetString(buffer);
             if (result.Length > 0 && result[result.Length - 1] == 0)
                 result = result.Substring(0, result.Length - 1);
 
@@ -226,7 +227,7 @@ namespace PdfiumViewer
 
         private uint GetBookmarkPageIndex(IntPtr bookmark)
         {
-            IntPtr dest = NativeMethods.FPDF_BookmarkGetDest(_document, bookmark);
+            var dest = NativeMethods.FPDF_BookmarkGetDest(_document, bookmark);
             if (dest != IntPtr.Zero)
                 return NativeMethods.FPDFDest_GetPageIndex(_document, dest);
 
@@ -240,7 +241,7 @@ namespace PdfiumViewer
             if (String.IsNullOrEmpty(text))
                 return new PdfMatches(startPage, endPage, matches);
 
-            for (int page = startPage; page <= endPage; page++)
+            for (var page = startPage; page <= endPage; page++)
             {
                 using (var pageData = new PageData(_document, _form, page))
                 {
@@ -256,13 +257,13 @@ namespace PdfiumViewer
                     {
                         while (NativeMethods.FPDFText_FindNext(handle))
                         {
-                            int index = NativeMethods.FPDFText_GetSchResultIndex(handle);
+                            var index = NativeMethods.FPDFText_GetSchResultIndex(handle);
 
-                            int matchLength = NativeMethods.FPDFText_GetSchCount(handle);
+                            var matchLength = NativeMethods.FPDFText_GetSchCount(handle);
 
                             var result = new byte[(matchLength + 1) * 2];
                             NativeMethods.FPDFText_GetText(pageData.TextPage, index, matchLength, result);
-                            string match = FPDFEncoding.GetString(result, 0, matchLength * 2);
+                            var match = FPDFEncoding.GetString(result, 0, matchLength * 2);
 
                             matches.Add(new PdfMatch(
                                 match,
@@ -414,7 +415,7 @@ namespace PdfiumViewer
             var result = new List<PdfRectangle>();
             RectangleF? lastBounds = null;
 
-            for (int i = 0; i < matchLength; i++)
+            for (var i = 0; i < matchLength; i++)
             {
                 var bounds = GetBounds(textPage, index + i);
 
@@ -428,8 +429,8 @@ namespace PdfiumViewer
                     AreClose(lastBounds.Value.Bottom, bounds.Bottom)
                 )
                 {
-                    float top = Math.Max(lastBounds.Value.Top, bounds.Top);
-                    float bottom = Math.Min(lastBounds.Value.Bottom, bounds.Bottom);
+                    var top = Math.Max(lastBounds.Value.Top, bounds.Top);
+                    var bottom = Math.Min(lastBounds.Value.Bottom, bounds.Bottom);
 
                     lastBounds = new RectangleF(
                         lastBounds.Value.Left,
@@ -478,7 +479,7 @@ namespace PdfiumViewer
         {
             using (var pageData = new PageData(_document, _form, page))
             {
-                int length = NativeMethods.FPDFText_CountChars(pageData.TextPage);
+                var length = NativeMethods.FPDFText_CountChars(pageData.TextPage);
                 return GetPdfText(pageData, new PdfTextSpan(page, 0, length));
             }
         }
@@ -531,11 +532,11 @@ namespace PdfiumViewer
         {
             // Length includes a trailing \0.
 
-            uint length = NativeMethods.FPDF_GetMetaText(_document, tag, null, 0);
+            var length = NativeMethods.FPDF_GetMetaText(_document, tag, null, 0);
             if (length <= 2)
                 return string.Empty;
 
-            byte[] buffer = new byte[length];
+            var buffer = new byte[length];
             NativeMethods.FPDF_GetMetaText(_document, tag, buffer, length);
 
             return Encoding.Unicode.GetString(buffer, 0, (int)(length - 2));
@@ -543,16 +544,16 @@ namespace PdfiumViewer
 
         public DateTime? GetMetaTextAsDate(string tag)
         {
-            string dt = GetMetaText(tag);
+            var dt = GetMetaText(tag);
 
             if (string.IsNullOrEmpty(dt))
                 return null;
 
-            Regex dtRegex =
+            var dtRegex =
                 new Regex(
                     @"(?:D:)(?<year>\d\d\d\d)(?<month>\d\d)(?<day>\d\d)(?<hour>\d\d)(?<minute>\d\d)(?<second>\d\d)(?<tz_offset>[+-zZ])?(?<tz_hour>\d\d)?'?(?<tz_minute>\d\d)?'?");
 
-            Match match = dtRegex.Match(dt);
+            var match = dtRegex.Match(dt);
 
             if (match.Success)
             {
@@ -566,7 +567,7 @@ namespace PdfiumViewer
                 var tzHour = match.Groups["tz_hour"]?.Value;
                 var tzMinute = match.Groups["tz_minute"]?.Value;
 
-                string formattedDate = $"{year}-{month}-{day}T{hour}:{minute}:{second}.0000000";
+                var formattedDate = $"{year}-{month}-{day}T{hour}:{minute}:{second}.0000000";
 
                 if (!string.IsNullOrEmpty(tzOffset))
                 {

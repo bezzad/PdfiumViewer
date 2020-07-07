@@ -17,7 +17,7 @@ namespace PdfiumViewer.Helpers
 
             lock (_syncRoot)
             {
-                int id = _nextId++;
+                var id = _nextId++;
                 _files.Add(id, stream);
                 return id;
             }

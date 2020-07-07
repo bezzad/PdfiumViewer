@@ -7,6 +7,7 @@ using System.Drawing.Imaging;
 using System.Drawing.Printing;
 using System.IO;
 using System.Windows.Interop;
+using PdfiumViewer.Drawing;
 using PdfiumViewer.Enums;
 
 namespace PdfiumViewer
@@ -172,8 +173,8 @@ namespace PdfiumViewer
             if (_disposed)
                 throw new ObjectDisposedException(GetType().Name);
 
-            float graphicsDpiX = graphics.DpiX;
-            float graphicsDpiY = graphics.DpiY;
+            var graphicsDpiX = graphics.DpiX;
+            var graphicsDpiY = graphics.DpiY;
 
             var dc = graphics.GetHdc();
 
@@ -194,7 +195,7 @@ namespace PdfiumViewer
                 var point = new NativeMethods.POINT();
                 NativeMethods.SetViewportOrgEx(dc, bounds.X, bounds.Y, out point);
 
-                bool success = _file.RenderPDFPageToDC(
+                var success = _file.RenderPDFPageToDC(
                     page,
                     dc,
                     (int)dpiX, (int)dpiY,
@@ -306,11 +307,11 @@ namespace PdfiumViewer
 
                 try
                 {
-                    uint background = (flags & PdfRenderFlags.Transparent) == 0 ? 0xFFFFFFFF : 0x00FFFFFF;
+                    var background = (flags & PdfRenderFlags.Transparent) == 0 ? 0xFFFFFFFF : 0x00FFFFFF;
 
                     NativeMethods.FPDFBitmap_FillRect(handle, 0, 0, width, height, background);
 
-                    bool success = _file.RenderPDFPageToBitmap(
+                    var success = _file.RenderPDFPageToBitmap(
                         page,
                         handle,
                         (int)dpiX, (int)dpiY,

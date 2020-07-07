@@ -1,7 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 
-#pragma warning disable 1591
-
 namespace PdfiumViewer
 {
     public class PdfBookmark

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
 
-namespace PdfiumViewer
+namespace PdfiumViewer.Drawing
 {
     public struct PdfRectangle : IEquatable<PdfRectangle>
     {

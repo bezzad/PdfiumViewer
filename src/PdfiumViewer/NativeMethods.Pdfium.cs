@@ -5,8 +5,6 @@ using System.Text;
 using PdfiumViewer.Enums;
 using PdfiumViewer.Helpers;
 
-#pragma warning disable 1591
-
 namespace PdfiumViewer
 {
     partial class NativeMethods
@@ -16,7 +14,7 @@ namespace PdfiumViewer
         // library is not thread safe, and this way of locking
         // guarantees that we don't access the Pdfium library from different
         // threads, even when there are multiple AppDomain's in play.
-        private static readonly string LockString = String.Intern("e362349b-001d-4cb2-bf55-a71606a3e36f");
+        private static readonly string LockString = string.Intern("e362349b-001d-4cb2-bf55-a71606a3e36f");
 
         public static void FPDF_AddRef()
         {
@@ -483,7 +481,7 @@ namespace PdfiumViewer
 
         public static bool FPDF_SaveAsCopy(IntPtr doc, Stream output, FPDF_SAVE_FLAGS flags)
         {
-            int id = StreamManager.Register(output);
+            var id = StreamManager.Register(output);
 
             try
             {
@@ -507,7 +505,7 @@ namespace PdfiumViewer
 
         public static bool FPDF_SaveWithVersion(IntPtr doc, Stream output, FPDF_SAVE_FLAGS flags, int fileVersion)
         {
-            int id = StreamManager.Register(output);
+            var id = StreamManager.Register(output);
 
             try
             {
@@ -554,10 +552,10 @@ namespace PdfiumViewer
             var stream = StreamManager.Get((int)param);
             if (stream == null)
                 return 0;
-            byte[] managedBuffer = new byte[size];
+            var managedBuffer = new byte[size];
 
             stream.Position = position;
-            int read = stream.Read(managedBuffer, 0, (int)size);
+            var read = stream.Read(managedBuffer, 0, (int)size);
             if (read != size)
                 return 0;
 
@@ -574,7 +572,7 @@ namespace PdfiumViewer
             if (stream == null)
                 return 0;
 
-            byte[] buffer = new byte[size];
+            var buffer = new byte[size];
             Marshal.Copy(data, buffer, 0, (int)size);
 
             try

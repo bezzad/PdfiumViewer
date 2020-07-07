@@ -1,8 +1,6 @@
 ﻿using System;
 
-#pragma warning disable 1591
-
-namespace PdfiumViewer
+namespace PdfiumViewer.Drawing
 {
     public struct PdfTextSpan : IEquatable<PdfTextSpan>
     {
@@ -28,15 +26,15 @@ namespace PdfiumViewer
         public override bool Equals(object obj)
         {
             return
-                obj is PdfTextSpan &&
-                Equals((PdfTextSpan)obj);
+                obj is PdfTextSpan span &&
+                Equals(span);
         }
 
         public override int GetHashCode()
         {
             unchecked
             {
-                int hashCode = Page;
+                var hashCode = Page;
                 hashCode = (hashCode * 397) ^ Offset;
                 hashCode = (hashCode * 397) ^ Length;
                 return hashCode;
