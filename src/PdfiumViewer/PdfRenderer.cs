@@ -2,7 +2,7 @@
 
 namespace PdfiumViewer
 {
-    public class PdfRenderer : ZoomingPanel
+    public class PdfRenderer : ScrollPanel
     {
         public void OpenPdf(string path)
         {

@@ -46,11 +46,18 @@ namespace PdfiumViewer
             MouseWheelMode = MouseWheelMode.PanAndZoom;
             Dpi = 96;
             ScrollWidth = 50;
+            Zoom = 1;
+            ZoomMin = DefaultZoomMin;
+            ZoomMax = DefaultZoomMax;
+            ZoomFactor = DefaultZoomFactor;
             FrameSpace = new Thickness(5);
             RenderedFramesMap = new ConcurrentDictionary<int, Image>();
         }
 
 
+        public const double DefaultZoomMin = 0.1;
+        public const double DefaultZoomMax = 5;
+        public const double DefaultZoomFactor = 1.2;
         protected const int SmallScrollChange = 1;
         protected const int LargeScrollChange = 10;
         protected Process CurrentProcess { get; } = Process.GetCurrentProcess();
@@ -67,13 +74,23 @@ namespace PdfiumViewer
         public PdfDocument Document { get; set; }
         public int PageNo { get; set; }
         public int Dpi { get; set; }
-        public PdfViewerZoomMode ZoomMode { get; set; }
+        public PdfViewerZoomMode ZoomMode { get; protected set; }
         public PdfRenderFlags Flags { get; set; }
         public PdfRotation Rotate { get; set; }
         public PdfViewerPagesDisplayMode PagesDisplayMode { get; set; }
         public MouseWheelMode MouseWheelMode { get; set; }
         public bool IsDocumentLoaded => Document != null;
         public int PageCount => Document?.PageCount ?? 0;
+        /// <summary>
+        /// Gets or sets the current zoom level.
+        /// </summary>
+        [Browsable(false)]
+        [DefaultValue(1.0)]
+        public double Zoom { get; set; }
+        [DefaultValue(DefaultZoomMin)] public double ZoomMin { get; set; }
+        [DefaultValue(DefaultZoomMax)] public double ZoomMax { get; set; }
+        [DefaultValue(DefaultZoomFactor)] public double ZoomFactor { get; set; }
+
         public PdfBookmarkCollection Bookmarks => Document?.Bookmarks;
         public IList<SizeF> PageSizes => Document?.PageSizes;
 
@@ -129,10 +146,6 @@ namespace PdfiumViewer
             GC.Collect();
             GotoPage(PageNo);
         }
-        protected void OnZoomModeChanged()
-        {
-            OnPagesDisplayModeChanged();
-        }
         protected void OnFlagsChanged()
         {
             GotoPage(PageNo);
@@ -179,19 +192,18 @@ namespace PdfiumViewer
                 if (isReverse)
                     currentPageSize = new SizeF(currentPageSize.Height, currentPageSize.Width);
 
-                var whRatio = currentPageSize.Width / currentPageSize.Height;
-                var height = containerHeight;
-                var width = whRatio * height;
-
+                if (ZoomMode == PdfViewerZoomMode.FitHeight)
+                {
+                    Zoom = containerHeight / currentPageSize.Height;
+                }
                 if (ZoomMode == PdfViewerZoomMode.FitWidth)
                 {
-                    width = containerWidth - ScrollWidth;
+                    Zoom = (containerWidth - ScrollWidth) / currentPageSize.Width;
                     if (PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode)
-                        width /= 2;
-                    height = (int)(1 / whRatio * width);
+                        Zoom /= 2;
                 }
 
-                return new Size((int)width, (int)height);
+                return new Size((int)currentPageSize.Width, (int)currentPageSize.Height);
             }
 
             return new Size();
@@ -222,7 +234,15 @@ namespace PdfiumViewer
 
             if (IsDocumentLoaded)
             {
-                if (PagesDisplayMode != PdfViewerPagesDisplayMode.ContinuousMode)
+                if (MouseWheelMode == MouseWheelMode.Zoom)
+                {
+                    e.Handled = true;
+                    if (e.Delta > 0)
+                        ZoomIn();
+                    else
+                        ZoomOut();
+                }
+                else if (PagesDisplayMode != PdfViewerPagesDisplayMode.ContinuousMode)
                 {
                     var pageStep = PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode ? 2 : 1;
 
@@ -249,6 +269,9 @@ namespace PdfiumViewer
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
+
+            if (e.KeyboardDevice.Modifiers == ModifierKeys.Control)
+                MouseWheelMode = MouseWheelMode.Zoom;
 
             switch (e.Key)
             {
@@ -283,13 +306,26 @@ namespace PdfiumViewer
                 case Key.End:
                     PerformScroll(ScrollAction.End, Orientation.Vertical);
                     return;
+
+                case Key.Add:
+                case Key.OemPlus:
+                    if (e.KeyboardDevice.Modifiers == ModifierKeys.Control)
+                        ZoomIn();
+                    return;
+
+                case Key.Subtract:
+                case Key.OemMinus:
+                    if (e.KeyboardDevice.Modifiers == ModifierKeys.Control)
+                        ZoomOut();
+                    return;
             }
         }
         protected override void OnKeyUp(KeyEventArgs e)
         {
             base.OnKeyUp(e);
 
-            if (e.KeyboardDevice.Modifiers == ModifierKeys.Control)
+            if (e.KeyboardDevice.Modifiers == ModifierKeys.Control ||
+                e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
                 MouseWheelMode = MouseWheelMode.Pan;
         }
         protected override void OnScrollChanged(ScrollChangedEventArgs e)
@@ -393,18 +429,47 @@ namespace PdfiumViewer
             }
         }
 
+        /// <summary>
+        /// Zooms the PDF document in one step.
+        /// </summary>
+        public void ZoomIn()
+        {
+            SetZoom(Zoom * ZoomFactor);
+        }
 
+        /// <summary>
+        /// Zooms the PDF document out one step.
+        /// </summary>
+        public void ZoomOut()
+        {
+            SetZoom(Zoom / ZoomFactor);
+        }
+
+        public void SetZoom(double zoom)
+        {
+            Zoom = Math.Min(Math.Max(zoom, ZoomMin), ZoomMax);
+            ZoomMode = PdfViewerZoomMode.None;
+            GotoPage(PageNo);
+        }
+
+        public void SetZoomMode(PdfViewerZoomMode mode)
+        {
+            ZoomMode = mode;
+            Zoom = 1;
+            OnPagesDisplayModeChanged();
+        }
+        
         public void GotoPage(int page)
         {
             if (IsDocumentLoaded)
             {
                 CurrentPageSize = CalculatePageSize(page);
 
-                RenderPage(Frame1, page, CurrentPageSize.Width, CurrentPageSize.Height);
+                RenderPage(Frame1, page, (int)(CurrentPageSize.Width * Zoom), (int)(CurrentPageSize.Height * Zoom));
 
                 if (PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode && page + 1 < Document.PageCount)
                 {
-                    RenderPage(Frame2, page + 1, CurrentPageSize.Width, CurrentPageSize.Height);
+                    RenderPage(Frame2, page + 1, (int)(CurrentPageSize.Width * Zoom), (int)(CurrentPageSize.Height * Zoom));
                 }
             }
         }
@@ -430,7 +495,7 @@ namespace PdfiumViewer
                     Frames[PageNo].BringIntoView(); // scroll to current page
             }
         }
-
+        
         public void Dispose()
         {
             Document?.Dispose();

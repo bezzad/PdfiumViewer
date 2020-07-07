@@ -118,11 +118,11 @@ namespace PdfiumViewer.Demo
 
         private void OnFitWidth(object sender, RoutedEventArgs e)
         {
-            Renderer.ZoomMode = PdfViewerZoomMode.FitWidth;
+            Renderer.SetZoomMode(PdfViewerZoomMode.FitWidth);
         }
         private void OnFitHeight(object sender, RoutedEventArgs e)
         {
-            Renderer.ZoomMode = PdfViewerZoomMode.FitHeight;
+            Renderer.SetZoomMode(PdfViewerZoomMode.FitHeight);
         }
 
         private void OnZoomInClick(object sender, RoutedEventArgs e)
