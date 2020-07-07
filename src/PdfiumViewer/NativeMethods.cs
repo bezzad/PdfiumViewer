@@ -10,6 +10,44 @@ namespace PdfiumViewer
 {
     internal static partial class NativeMethods
     {
+        public const int GmAdvanced = 2;
+        public const uint MwtLeftMultiply = 2;
+        public const int LogPixelsX = 88;
+        public const int LogPixelsY = 89;
+        public const uint SW_ERASE = 0x0004;
+        public const uint SW_SMOOTHSCROLL = 0x0010;
+        public const int WS_VSCROLL = 0x00200000;
+        public const int WS_HSCROLL = 0x00100000;
+        public const int WM_MOUSEWHEEL = 0x20a;
+        public const int SB_HORZ = 0x0;
+        public const int SB_VERT = 0x1;
+        public const uint SW_INVALIDATE = 0x0002;
+        public const uint SW_SCROLLCHILDREN = 0x0001;
+        public const int SB_LINEUP = 0;
+        public const int SB_LINELEFT = 0;
+        public const int SB_LINEDOWN = 1;
+        public const int SB_LINERIGHT = 1;
+        public const int SB_PAGEUP = 2;
+        public const int SB_PAGELEFT = 2;
+        public const int SB_PAGEDOWN = 3;
+        public const int SB_PAGERIGHT = 3;
+        public const int SB_THUMBPOSITION = 4;
+        public const int SB_THUMBTRACK = 5;
+        public const int SB_TOP = 6;
+        public const int SB_LEFT = 6;
+        public const int SB_BOTTOM = 7;
+        public const int SB_RIGHT = 7;
+        public const int SB_ENDSCROLL = 8;
+        public const int WM_HSCROLL = 0x114;
+        public const int WM_VSCROLL = 0x115;
+        public const int WM_SETCURSOR = 0x20;
+        public const int SIF_TRACKPOS = 0x10;
+        public const int SIF_RANGE = 0x1;
+        public const int SIF_POS = 0x4;
+        public const int SIF_PAGE = 0x2;
+        public const int SIF_ALL = SIF_RANGE | SIF_PAGE | SIF_POS | SIF_TRACKPOS;
+
+
         static NativeMethods()
         {
             // First try the custom resolving mechanism.
@@ -110,7 +148,6 @@ namespace PdfiumViewer
             }
         }
 
-        public const int GM_ADVANCED = 2;
 
         [DllImport("gdi32.dll")]
         public static extern int SetGraphicsMode(IntPtr hdc, int iMode);
@@ -126,7 +163,6 @@ namespace PdfiumViewer
             public float eDy;
         }
 
-        public const uint MWT_LEFTMULTIPLY = 2;
 
         [DllImport("gdi32.dll")]
         public static extern bool ModifyWorldTransform(IntPtr hdc, [In] ref XFORM lpXform, uint iMode);
@@ -140,39 +176,6 @@ namespace PdfiumViewer
 
         [DllImport("gdi32.dll")]
         public static extern bool SetViewportOrgEx(IntPtr hdc, int X, int Y, out POINT lpPoint);
-
-        public const uint SW_ERASE = 0x0004;
-        public const uint SW_SMOOTHSCROLL = 0x0010;
-        public const int WS_VSCROLL = 0x00200000;
-        public const int WS_HSCROLL = 0x00100000;
-        public const int WM_MOUSEWHEEL = 0x20a;
-        public const int SB_HORZ = 0x0;
-        public const int SB_VERT = 0x1;
-        public const uint SW_INVALIDATE = 0x0002;
-        public const uint SW_SCROLLCHILDREN = 0x0001;
-        public const int SB_LINEUP = 0;
-        public const int SB_LINELEFT = 0;
-        public const int SB_LINEDOWN = 1;
-        public const int SB_LINERIGHT = 1;
-        public const int SB_PAGEUP = 2;
-        public const int SB_PAGELEFT = 2;
-        public const int SB_PAGEDOWN = 3;
-        public const int SB_PAGERIGHT = 3;
-        public const int SB_THUMBPOSITION = 4;
-        public const int SB_THUMBTRACK = 5;
-        public const int SB_TOP = 6;
-        public const int SB_LEFT = 6;
-        public const int SB_BOTTOM = 7;
-        public const int SB_RIGHT = 7;
-        public const int SB_ENDSCROLL = 8;
-        public const int WM_HSCROLL = 0x114;
-        public const int WM_VSCROLL = 0x115;
-        public const int WM_SETCURSOR = 0x20;
-        public const int SIF_TRACKPOS = 0x10;
-        public const int SIF_RANGE = 0x1;
-        public const int SIF_POS = 0x4;
-        public const int SIF_PAGE = 0x2;
-        public const int SIF_ALL = SIF_RANGE | SIF_PAGE | SIF_POS | SIF_TRACKPOS;
 
         [StructLayout(LayoutKind.Sequential)]
         public struct RECT
@@ -253,9 +256,6 @@ namespace PdfiumViewer
         [DllImport("gdi32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool DeleteObject([In] IntPtr hObject);
-
-        public const int LOGPIXELSX = 88;
-        public const int LOGPIXELSY = 89;
 
         [DllImport("gdi32.dll")]
         public static extern int GetDeviceCaps(IntPtr hdc, int nIndex);

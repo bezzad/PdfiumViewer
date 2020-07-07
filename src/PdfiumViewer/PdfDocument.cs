@@ -186,8 +186,8 @@ namespace PdfiumViewer
                         eM22 = graphicsDpiY / dpiY
                     };
 
-                    NativeMethods.SetGraphicsMode(dc, NativeMethods.GM_ADVANCED);
-                    NativeMethods.ModifyWorldTransform(dc, ref transform, NativeMethods.MWT_LEFTMULTIPLY);
+                    NativeMethods.SetGraphicsMode(dc, NativeMethods.GmAdvanced);
+                    NativeMethods.ModifyWorldTransform(dc, ref transform, NativeMethods.MwtLeftMultiply);
                 }
 
                 var point = new NativeMethods.POINT();

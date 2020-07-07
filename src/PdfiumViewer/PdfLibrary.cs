@@ -4,12 +4,12 @@ namespace PdfiumViewer
 {
     internal class PdfLibrary : IDisposable
     {
-        private static readonly object _syncRoot = new object();
+        private static readonly object SyncRoot = new object();
         private static PdfLibrary _library;
 
         public static void EnsureLoaded()
         {
-            lock (_syncRoot)
+            lock (SyncRoot)
             {
                 if (_library == null)
                     _library = new PdfLibrary();

@@ -21,7 +21,7 @@ namespace PdfiumViewer
         public PdfPageLinks(IList<PdfPageLink> links)
         {
             if (links == null)
-                throw new ArgumentNullException("links");
+                throw new ArgumentNullException(nameof(links));
 
             Links = new ReadOnlyCollection<PdfPageLink>(links);
         }

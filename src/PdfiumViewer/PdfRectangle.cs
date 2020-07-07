@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Drawing;
 
-#pragma warning disable 1591
-
 namespace PdfiumViewer
 {
     public struct PdfRectangle : IEquatable<PdfRectangle>
@@ -12,17 +10,11 @@ namespace PdfiumViewer
         // _page is offset by 1 so that Empty returns an invalid rectangle.
         private readonly int _page;
 
-        public int Page
-        {
-            get { return _page - 1; }
-        }
+        public int Page => _page - 1;
 
         public RectangleF Bounds { get; }
 
-        public bool IsValid
-        {
-            get { return _page != 0; }
-        }
+        public bool IsValid => _page != 0;
 
         public PdfRectangle(int page, RectangleF bounds)
         {
@@ -40,8 +32,8 @@ namespace PdfiumViewer
         public override bool Equals(object obj)
         {
             return
-                obj is PdfRectangle &&
-                Equals((PdfRectangle)obj);
+                obj is PdfRectangle rectangle &&
+                Equals(rectangle);
         }
 
         public override int GetHashCode()
