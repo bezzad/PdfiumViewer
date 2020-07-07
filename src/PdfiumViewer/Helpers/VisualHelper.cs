@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Media;
 
-namespace PdfiumViewer
+namespace PdfiumViewer.Helpers
 {
     internal static class VisualHelper
     {
