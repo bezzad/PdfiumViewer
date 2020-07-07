@@ -234,6 +234,7 @@ namespace PdfiumViewer.Demo
 
         private void Search()
         {
+            SearchMatchItemNo = 0;
             var matchCase = MatchCaseCheckBox.IsChecked.GetValueOrDefault();
             var wholeWordOnly = WholeWordOnlyCheckBox.IsChecked.GetValueOrDefault();
 
@@ -242,12 +243,14 @@ namespace PdfiumViewer.Demo
             SearchMatchesCount = SearchMatches.Items.Count;
             SearchMatchesTextBlock.Visibility = Visibility.Visible;
             if (SearchMatches.Items.Any())
-                DisplayTextSpan(SearchMatches.Items.First().TextSpan);
+            {
+                DisplayTextSpan(SearchMatches.Items[SearchMatchItemNo++].TextSpan);
+            }
         }
 
         private void DisplayTextSpan(PdfTextSpan span)
         {
-            Renderer.GotoPage(span.Page);
+            Page = span.Page+1;
             Renderer.ScrollToVerticalOffset(span.Offset);
         }
 
@@ -295,6 +298,24 @@ namespace PdfiumViewer.Demo
                 Cts.Cancel();
                 Debug.Fail(ex.Message);
                 MessageBox.Show(this, ex.Message, "Error!");
+            }
+        }
+
+        private void OnNextFoundClick(object sender, RoutedEventArgs e)
+        {
+            if (SearchMatchesCount > SearchMatchItemNo)
+            {
+                SearchMatchItemNo++;
+                DisplayTextSpan(SearchMatches.Items[SearchMatchItemNo-1].TextSpan);
+            }
+        }
+
+        private void OnPrevFoundClick(object sender, RoutedEventArgs e)
+        {
+            if (SearchMatchItemNo > 1)
+            {
+                SearchMatchItemNo--;
+                DisplayTextSpan(SearchMatches.Items[SearchMatchItemNo-1].TextSpan);
             }
         }
     }

@@ -58,10 +58,10 @@
                                 </TextBlock.Style>
                             </TextBlock>
                         </Grid>
-                        <Button ToolTip="Previous Page" Click="OnPrevPageClick" Background="Transparent" BorderThickness="0" Width="30">
+                        <Button ToolTip="Previous Page" Click="OnPrevFoundClick" Background="Transparent" BorderThickness="0" Width="30">
                             <Image Source="Resources/prev.png" />
                         </Button>
-                        <Button ToolTip="Previous Page" Click="OnPrevPageClick" Background="Transparent" BorderThickness="0" Width="30">
+                        <Button ToolTip="Previous Page" Click="OnNextFoundClick" Background="Transparent" BorderThickness="0" Width="30">
                             <Image Source="Resources/next.png" />
                         </Button>
                         <CheckBox Name="MatchCaseCheckBox" VerticalContentAlignment="Center" Margin="5">Match case</CheckBox>
