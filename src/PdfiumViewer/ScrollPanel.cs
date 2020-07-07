@@ -185,8 +185,8 @@ namespace PdfiumViewer
         {
             page ??= PageNo;
             var isReverse = (Rotate == PdfRotation.Rotate90 || Rotate == PdfRotation.Rotate270);
-            var containerWidth = ActualWidth - Padding.Left - Padding.Right; // ViewportWidth
-            var containerHeight = ActualHeight - Padding.Top - Padding.Bottom; // ViewportHeight
+            var containerWidth = ActualWidth - Padding.Left - Padding.Right - FrameSpace.Left - FrameSpace.Right; // ViewportWidth
+            var containerHeight = ActualHeight - Padding.Top - Padding.Bottom - FrameSpace.Top - FrameSpace.Bottom; // ViewportHeight
 
             if (IsDocumentLoaded)
             {

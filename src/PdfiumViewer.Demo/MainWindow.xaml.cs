@@ -51,7 +51,11 @@ namespace PdfiumViewer.Demo
             CurrentProcess = Process.GetCurrentProcess();
             Cts = new CancellationTokenSource();
             DataContext = this;
-            Renderer.PropertyChanged += delegate { OnPropertyChanged(nameof(Page)); };
+            Renderer.PropertyChanged += delegate
+            {
+                OnPropertyChanged(nameof(Page)); 
+                OnPropertyChanged(nameof(ZoomPercent));
+            };
 
             MemoryChecker = new System.Windows.Threading.DispatcherTimer();
             MemoryChecker.Tick += OnMemoryChecker;
