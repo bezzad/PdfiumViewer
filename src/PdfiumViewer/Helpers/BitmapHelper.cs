@@ -7,7 +7,6 @@ namespace PdfiumViewer
 {
     internal static class BitmapHelper
     {
-
         public static BitmapSource ToBitmapSource(this Image image)
         {
             return ToBitmapSource(image as Bitmap);
@@ -22,20 +21,18 @@ namespace PdfiumViewer
         {
             if (bitmap == null) return null;
 
-            using (System.Drawing.Bitmap source = (System.Drawing.Bitmap)bitmap.Clone())
-            {
-                IntPtr hBitmap = source.GetHbitmap(); //obtain the Hbitmap
+            using var source = (System.Drawing.Bitmap)bitmap.Clone();
+            var hBitmap = source.GetHbitmap(); //obtain the Hbitmap
 
-                BitmapSource bs = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
-                    hBitmap,
-                    IntPtr.Zero,
-                    System.Windows.Int32Rect.Empty,
-                    System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
+            var bs = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+                hBitmap,
+                IntPtr.Zero,
+                System.Windows.Int32Rect.Empty,
+                System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
 
-                NativeMethods.DeleteObject(hBitmap); //release the HBitmap
-                bs.Freeze();
-                return bs;
-            }
+            NativeMethods.DeleteObject(hBitmap); //release the HBitmap
+            bs.Freeze();
+            return bs;
         }
 
         public static BitmapSource ToBitmapSource(this byte[] bytes, int width, int height, int dpiX, int dpiY)
