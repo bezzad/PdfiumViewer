@@ -130,14 +130,13 @@ namespace PdfiumViewer
 
             for (var i = 0; i < Frames.Length; i++)
             {
-                if (Frames[i] == null)
-                    Frames[i] = new Image() { Margin = FrameSpace };
+                Frames[i] ??= new Image { Margin = FrameSpace };
 
                 if (IsDocumentLoaded)
                 {
                     var pageSize = CalculatePageSize(i);
-                    Frames[i].Width = pageSize.Width;
-                    Frames[i].Height = pageSize.Height;
+                    Frames[i].Width = pageSize.Width * Zoom;
+                    Frames[i].Height = pageSize.Height * Zoom;
                 }
 
                 Panel.Children.Add(Frames[i]);
@@ -225,7 +224,7 @@ namespace PdfiumViewer
 
             GC.Collect();
         }
-        
+
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
             base.OnRenderSizeChanged(sizeInfo);
@@ -292,7 +291,7 @@ namespace PdfiumViewer
 
                 case Key.Right:
                     PerformScroll(ScrollAction.LineDown, Orientation.Horizontal);
-                    return; 
+                    return;
 
                 case Key.PageUp:
                     PerformScroll(ScrollAction.PageUp, Orientation.Vertical);
@@ -335,15 +334,15 @@ namespace PdfiumViewer
         {
             base.OnScrollChanged(e);
 
-            if (MouseWheelMode != MouseWheelMode.Zoom && 
+            if (MouseWheelMode != MouseWheelMode.Zoom &&
                 PagesDisplayMode == PdfViewerPagesDisplayMode.ContinuousMode)
             {
                 var startOffset = e.VerticalOffset;
                 var height = e.ViewportHeight;
                 var pageSize = CalculatePageSize(0);
 
-                var startFrameIndex = startOffset / (pageSize.Height + FrameSpace.Top + FrameSpace.Bottom);
-                var endFrameIndex = (startOffset + height) / (pageSize.Height + FrameSpace.Top + FrameSpace.Bottom);
+                var startFrameIndex = startOffset / (pageSize.Height * Zoom + FrameSpace.Top + FrameSpace.Bottom);
+                var endFrameIndex = (startOffset + height) / (pageSize.Height * Zoom + FrameSpace.Top + FrameSpace.Bottom);
 
                 PageNo = (int)Math.Min(Math.Max(startFrameIndex, 0), PageCount - 1);
                 var endPageIndex = (int)Math.Min(Math.Max(endFrameIndex, 0), PageCount - 1);
@@ -369,7 +368,7 @@ namespace PdfiumViewer
                 switch (action)
                 {
                     case ScrollAction.LineUp:
-                        if(VerticalOffset > SmallScrollChange)
+                        if (VerticalOffset > SmallScrollChange)
                             ScrollToVerticalOffset(VerticalOffset - SmallScrollChange);
                         break;
 
@@ -429,73 +428,6 @@ namespace PdfiumViewer
                         ScrollToEnd();
                         break;
                 }
-            }
-        }
-
-        /// <summary>
-        /// Zooms the PDF document in one step.
-        /// </summary>
-        public void ZoomIn()
-        {
-            SetZoom(Zoom * ZoomFactor);
-        }
-
-        /// <summary>
-        /// Zooms the PDF document out one step.
-        /// </summary>
-        public void ZoomOut()
-        {
-            SetZoom(Zoom / ZoomFactor);
-        }
-
-        public void SetZoom(double zoom)
-        {
-            Zoom = Math.Min(Math.Max(zoom, ZoomMin), ZoomMax);
-            ZoomMode = PdfViewerZoomMode.None;
-            GotoPage(PageNo);
-        }
-
-        public void SetZoomMode(PdfViewerZoomMode mode)
-        {
-            ZoomMode = mode;
-            Zoom = 1;
-            OnPagesDisplayModeChanged();
-        }
-        
-        public void GotoPage(int page)
-        {
-            if (IsDocumentLoaded)
-            {
-                CurrentPageSize = CalculatePageSize(page);
-
-                RenderPage(Frame1, page, (int)(CurrentPageSize.Width * Zoom), (int)(CurrentPageSize.Height * Zoom));
-
-                if (PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode && page + 1 < Document.PageCount)
-                {
-                    RenderPage(Frame2, page + 1, (int)(CurrentPageSize.Width * Zoom), (int)(CurrentPageSize.Height * Zoom));
-                }
-            }
-        }
-        public void NextPage()
-        {
-            if (IsDocumentLoaded)
-            {
-                var extentVal = PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode ? 2 : 1;
-                PageNo = Math.Min(Math.Max(PageNo + extentVal, 0), PageCount - extentVal);
-
-                if (PagesDisplayMode == PdfViewerPagesDisplayMode.ContinuousMode)
-                    Frames[PageNo].BringIntoView(); // scroll to current page
-            }
-        }
-        public void PreviousPage()
-        {
-            if (IsDocumentLoaded)
-            {
-                var extentVal = PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode ? 2 : 1;
-                PageNo = Math.Min(Math.Max(PageNo - extentVal, 0), PageCount - extentVal);
-
-                if (PagesDisplayMode == PdfViewerPagesDisplayMode.ContinuousMode)
-                    Frames[PageNo].BringIntoView(); // scroll to current page
             }
         }
         
