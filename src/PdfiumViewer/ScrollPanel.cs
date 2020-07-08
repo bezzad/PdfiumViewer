@@ -82,6 +82,11 @@ namespace PdfiumViewer
         public PdfRotation Rotate { get; set; }
         public PdfViewerPagesDisplayMode PagesDisplayMode { get; set; }
         public MouseWheelMode MouseWheelMode { get; set; }
+        public bool IsRightToLeft
+        {
+            get => Panel.FlowDirection == FlowDirection.RightToLeft;
+            set => Panel.FlowDirection = value ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+        }
         public bool IsDocumentLoaded => Document != null;
         public int PageCount => Document?.PageCount ?? 0;
         /// <summary>

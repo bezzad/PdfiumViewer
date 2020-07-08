@@ -13,6 +13,7 @@
     <None Remove="Resources\fit_height.png" />
     <None Remove="Resources\fit_width.png" />
     <None Remove="Resources\info.png" />
+    <None Remove="Resources\ltr.png" />
     <None Remove="Resources\next.png" />
     <None Remove="Resources\one_page.png" />
     <None Remove="Resources\open_pdf.png" />
@@ -20,6 +21,7 @@
     <None Remove="Resources\render_all_pages.png" />
     <None Remove="Resources\rotate_left.png" />
     <None Remove="Resources\rotate_right.png" />
+    <None Remove="Resources\rtl.png" />
     <None Remove="Resources\save.png" />
     <None Remove="Resources\show_bookmarks.png" />
     <None Remove="Resources\show_text.png" />
@@ -54,6 +56,9 @@
     <Resource Include="Resources\info.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Resources\ltr.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Resources\next.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
@@ -71,6 +76,9 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Resources\rotate_right.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\rtl.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Resources\save.png" />

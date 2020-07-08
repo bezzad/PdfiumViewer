@@ -65,7 +65,8 @@
                             <Image Source="Resources/next.png" />
                         </Button>
                         <CheckBox Name="MatchCaseCheckBox" VerticalContentAlignment="Center" Margin="5">Match case</CheckBox>
-                        <CheckBox Name="WholeWordOnlyCheckBox" VerticalContentAlignment="Center" Margin="5">Whole words</CheckBox>
+                        <CheckBox Name="WholeWordOnlyCheckBox" VerticalContentAlignment="Center" Margin="5">Match Whole words</CheckBox>
+                        <CheckBox Name="HighlightAllMatchesCheckBox" VerticalContentAlignment="Center" Margin="5">Highlight All Matches</CheckBox>
                         <TextBlock x:Name="SearchMatchesTextBlock" Background="LightCyan" Visibility="Collapsed" 
                                    VerticalAlignment="Center" Margin="5" Padding="10">
                             <Run Text="{Binding SearchMatchItemNo, Mode=OneWay}" />
@@ -76,6 +77,14 @@
                     </StackPanel>
                 </Border>
             </Popup>
+            <GridSplitter Background="Gray" Width="1" Margin="5,0"/>
+            <Button ToolTip="Is right to left document" Click="ToRtlClick">
+                <Image Source="Resources/rtl.png" />
+            </Button>
+            <Button ToolTip="Is left to right document" Click="ToLtrClick">
+                <Image Source="Resources/ltr.png" />
+            </Button>
+
             <GridSplitter Background="Gray" Width="1" Margin="5,0"/>
 
             <TextBlock Text="DPI:" VerticalAlignment="Center"/>

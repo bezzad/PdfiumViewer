@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 using PdfiumViewer.Demo.Annotations;
 using System;
 using System.ComponentModel;
@@ -315,8 +315,19 @@ namespace PdfiumViewer.Demo
             if (SearchMatchItemNo > 1)
             {
                 SearchMatchItemNo--;
-                DisplayTextSpan(SearchMatches.Items[SearchMatchItemNo-1].TextSpan);
+                // DisplayTextSpan(SearchMatches.Items[SearchMatchItemNo - 1].TextSpan);
+                SearchManager.FindNext(false);
             }
+        }
+        
+        private void ToRtlClick(object sender, RoutedEventArgs e)
+        {
+            Renderer.IsRightToLeft = true;
+        }
+
+        private void ToLtrClick(object sender, RoutedEventArgs e)
+        {
+            Renderer.IsRightToLeft = false;
         }
     }
 }
