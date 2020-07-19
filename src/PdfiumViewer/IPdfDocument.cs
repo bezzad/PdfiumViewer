@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.IO;
+using PdfiumViewer.Core;
+using PdfiumViewer.Drawing;
+using PdfiumViewer.Enums;
 
 namespace PdfiumViewer
 {

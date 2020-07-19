@@ -4,6 +4,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:pdfiumViewer="clr-namespace:PdfiumViewer;assembly=PdfiumViewer"
+        xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:converters="clr-namespace:PdfiumViewer.Demo.Converters"
         mc:Ignorable="d"
         Title="PDFium Viewer WPF Demo" Height="450" Width="800" Background="LightGray">
     <Grid >
@@ -12,26 +14,102 @@
             <RowDefinition />
             <RowDefinition Height="30" />
         </Grid.RowDefinitions>
-        <ToolBar Grid.Row="0">
+        <ToolBar Grid.Row="0" Background="WhiteSmoke">
             <Button ToolTip="Open Pdf" Click="OpenPdf">
                 <Image Source="Resources/open_pdf.png" />
+            </Button>
+            <Button ToolTip="Save as Images" Click="SaveAsImages">
+                <Image Source="Resources/save.png" />
             </Button>
             <Button ToolTip="Render all pages" Click="RenderToMemory">
                 <Image Source="Resources/render_all_pages.png" />
             </Button>
+            <Button x:Name="BtnSearch" ToolTip="Search term" Click="OpenCloseSearch">
+                <Image Source="Resources/find.png" />
+            </Button>
+            <Popup IsOpen="{Binding IsSearchOpen}" 
+                   Placement="Bottom"
+                   PlacementRectangle="0,20,0,20"
+                   PlacementTarget = "{Binding ElementName=BtnSearch}"
+                   PopupAnimation="Slide">
+
+                <Border Background="WhiteSmoke" Height="50" 
+                        HorizontalAlignment="Center" 
+                        BorderBrush="AntiqueWhite" 
+                        BorderThickness="2">
+                    <StackPanel Orientation="Horizontal"
+                                VerticalAlignment="Center">
+                        <Grid Width="150" Height="40" Margin="2">
+                            <TextBox x:Name="SearchTermTextBox" Height="30" Width="140"  
+                                     VerticalAlignment="Center" VerticalContentAlignment="Center" 
+                                     HorizontalAlignment="Left"  Margin="5"
+                                     Text="{Binding SearchTerm, UpdateSourceTrigger=PropertyChanged}"
+                                     KeyDown="OnSearchTermKeyDown"/>
+                            <TextBlock IsHitTestVisible="False" Width="140" Text="Find in document..." VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" Foreground="DarkGray">
+                                <TextBlock.Style>
+                                    <Style TargetType="{x:Type TextBlock}">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, ElementName=SearchTermTextBox}" Value="">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                        <Button ToolTip="Previous Page" Click="OnPrevFoundClick" Background="Transparent" BorderThickness="0" Width="30">
+                            <Image Source="Resources/prev.png" />
+                        </Button>
+                        <Button ToolTip="Previous Page" Click="OnNextFoundClick" Background="Transparent" BorderThickness="0" Width="30">
+                            <Image Source="Resources/next.png" />
+                        </Button>
+                        <CheckBox Name="MatchCaseCheckBox" VerticalContentAlignment="Center" Margin="5">Match case</CheckBox>
+                        <CheckBox Name="WholeWordOnlyCheckBox" VerticalContentAlignment="Center" Margin="5">Match Whole words</CheckBox>
+                        <CheckBox Name="HighlightAllMatchesCheckBox" VerticalContentAlignment="Center" Margin="5">Highlight All Matches</CheckBox>
+                        <TextBlock x:Name="SearchMatchesTextBlock" Background="LightCyan" Visibility="Collapsed" 
+                                   VerticalAlignment="Center" Margin="5" Padding="10">
+                            <Run Text="{Binding SearchMatchItemNo, Mode=OneWay}" />
+                            <Run Text=" of " />
+                            <Run Text="{Binding SearchMatchesCount, Mode=OneWay}" />
+                            <Run Text=" matches" />
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+            </Popup>
+            <GridSplitter Background="Gray" Width="1" Margin="5,0"/>
+            <Button ToolTip="Is right to left document" Click="ToRtlClick">
+                <Image Source="Resources/rtl.png" />
+            </Button>
+            <Button ToolTip="Is left to right document" Click="ToLtrClick">
+                <Image Source="Resources/ltr.png" />
+            </Button>
+
             <GridSplitter Background="Gray" Width="1" Margin="5,0"/>
 
             <TextBlock Text="DPI:" VerticalAlignment="Center"/>
-            <TextBox x:Name="TxtDpi" Width="50" Text="{Binding ElementName=Renderer, Path=Dpi}" />
+            <TextBox x:Name="TxtDpi" Width="50" Text="{Binding ElementName=Renderer, Path=Dpi, UpdateSourceTrigger=PropertyChanged}">
+                <b:Interaction.Behaviors>
+                    <converters:AllowableCharactersTextBoxBehavior RegularExpression="^[0-9.\-]+$" MaxLength="6" />
+                </b:Interaction.Behaviors>
+            </TextBox>
             <GridSplitter Background="Gray" Width="1" Margin="5,0" />
 
             <Button ToolTip="Previous Page" Click="OnPrevPageClick">
                 <Image Source="Resources/prev.png" />
             </Button>
-            <TextBox x:Name="TxtPageNo" Width="50" Text="{Binding ElementName=Renderer, Path=PageNo}" TextAlignment="Center" />
             <Button ToolTip="Next Page" Click="OnNextPageClick">
                 <Image Source="Resources/next.png" />
             </Button>
+            <TextBox x:Name="TxtPageNo" Width="50" Text="{Binding Page, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" Background="Bisque" >
+                <b:Interaction.Behaviors>
+                    <converters:AllowableCharactersTextBoxBehavior RegularExpression="^[0-9.\-]+$" MaxLength="7" />
+                </b:Interaction.Behaviors>
+            </TextBox>
+            <TextBlock VerticalAlignment="Center" FontSize="14">
+                <Run Text="of "/>
+                <Run Text="{Binding ElementName=Renderer, Path=PageCount, Mode=OneWay}"/>
+            </TextBlock>
             <GridSplitter Background="Gray" Width="1" Margin="5,0"/>
 
             <Button ToolTip="Zoom in" Click="OnZoomInClick">
@@ -40,6 +118,12 @@
             <Button ToolTip="Zoom out" Click="OnZoomOutClick">
                 <Image Source="Resources/zoom_out.png" />
             </Button>
+            <TextBox x:Name="TxtZoomPercent" Width="50" Text="{Binding ZoomPercent, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" Background="Bisque" >
+                <b:Interaction.Behaviors>
+                    <converters:AllowableCharactersTextBoxBehavior RegularExpression="^[0-9.\-]+$" MaxLength="7" />
+                </b:Interaction.Behaviors>
+            </TextBox>
+            <TextBlock VerticalAlignment="Center" FontSize="14" Text="%" />
             <GridSplitter Background="Gray" Width="1" Margin="5,0"/>
 
             <Button ToolTip="Single Page Mode" Click="OnSinglePageModeClick">
@@ -78,20 +162,16 @@
             <Button ToolTip="Get Page Text" Click="OnGetText">
                 <Image Source="Resources/show_text.png" />
             </Button>
-            <Button ToolTip="Find text" Click="OnFindText">
-                <Image Source="Resources/find.png" />
-            </Button>
             <Button ToolTip="Pdf Information" Click="OnInfo">
                 <Image Source="Resources/info.png" />
             </Button>
-
         </ToolBar>
 
         <pdfiumViewer:PdfRenderer Grid.Row="1" Grid.Column="0" Name="Renderer" Padding="10"/>
 
         <StatusBar Grid.Row="2" Grid.Column="0">
             <StatusBarItem Content="Page:" />
-            <StatusBarItem Content="{Binding ElementName=Renderer, Path=PageNo, Mode=OneWay, Converter={StaticResource MathConverter}, ConverterParameter=+1}" />
+            <StatusBarItem Content="{Binding Page, Mode=OneWay}" />
             <StatusBarItem Content="     |    " />
             <StatusBarItem Content="{Binding InfoText, Mode=OneWay}" />
         </StatusBar>

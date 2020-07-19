@@ -1,4 +1,8 @@
 ﻿using Microsoft.Win32;
+using PdfiumViewer.Core;
+using PdfiumViewer.Demo.Annotations;
+using PdfiumViewer.Drawing;
+using PdfiumViewer.Enums;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -8,7 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using PdfiumViewer.Demo.Annotations;
+using System.Windows.Input;
 
 namespace PdfiumViewer.Demo
 {
@@ -20,7 +24,24 @@ namespace PdfiumViewer.Demo
         private Process CurrentProcess { get; }
         private CancellationTokenSource Cts { get; }
         private System.Windows.Threading.DispatcherTimer MemoryChecker { get; }
+        private PdfSearchManager SearchManager { get; }
+
         public string InfoText { get; set; }
+        public string SearchTerm { get; set; }
+
+        public double ZoomPercent
+        {
+            get => Renderer.Zoom * 100;
+            set => Renderer.SetZoom(value / 100);
+        }
+        public bool IsSearchOpen { get; set; }
+        public int SearchMatchItemNo { get; set; }
+        public int SearchMatchesCount { get; set; }
+        public int Page
+        {
+            get => Renderer.PageNo + 1;
+            set => Renderer.PageNo = Math.Min(Math.Max(value - 1, 0), Renderer.PageCount - 1);
+        }
 
 
         public MainWindow()
@@ -30,14 +51,24 @@ namespace PdfiumViewer.Demo
             CurrentProcess = Process.GetCurrentProcess();
             Cts = new CancellationTokenSource();
             DataContext = this;
+            Renderer.PropertyChanged += delegate
+            {
+                OnPropertyChanged(nameof(Page));
+                OnPropertyChanged(nameof(ZoomPercent));
+            };
 
             MemoryChecker = new System.Windows.Threading.DispatcherTimer();
             MemoryChecker.Tick += OnMemoryChecker;
             MemoryChecker.Interval = new TimeSpan(0, 0, 1);
             MemoryChecker.Start();
+
+            SearchManager = new PdfSearchManager(Renderer);
+            MatchCaseCheckBox.IsChecked = SearchManager.MatchCase;
+            WholeWordOnlyCheckBox.IsChecked = SearchManager.MatchWholeWord;
+            HighlightAllMatchesCheckBox.IsChecked = SearchManager.HighlightAllMatches;
         }
 
-        private void OnMemoryChecker(object? sender, EventArgs e)
+        private void OnMemoryChecker(object sender, EventArgs e)
         {
             CurrentProcess.Refresh();
             InfoText = $"Memory: {CurrentProcess.PrivateMemorySize64 / 1024 / 1024} MB";
@@ -99,11 +130,11 @@ namespace PdfiumViewer.Demo
 
         private void OnFitWidth(object sender, RoutedEventArgs e)
         {
-            Renderer.ZoomMode = PdfViewerZoomMode.FitWidth;
+            Renderer.SetZoomMode(PdfViewerZoomMode.FitWidth);
         }
         private void OnFitHeight(object sender, RoutedEventArgs e)
         {
-            Renderer.ZoomMode = PdfViewerZoomMode.FitHeight;
+            Renderer.SetZoomMode(PdfViewerZoomMode.FitHeight);
         }
 
         private void OnZoomInClick(object sender, RoutedEventArgs e)
@@ -126,21 +157,6 @@ namespace PdfiumViewer.Demo
             Renderer.ClockwiseRotate();
         }
 
-        private void OnFindText(object sender, RoutedEventArgs e)
-        {
-            // string text = searchValueTextBox.Text;
-            // bool matchCase = matchCaseCheckBox.IsChecked.GetValueOrDefault();
-            // bool wholeWordOnly = wholeWordOnlyCheckBox.IsChecked.GetValueOrDefault();
-            //
-
-            // var matches = Renderer.Search(text, matchCase, wholeWord);
-            // var sb = new StringBuilder();
-            //
-            // foreach (var match in matches.Items)
-            // {
-            //     sb.AppendLine($"Found \"{match.Text}\" in page: {match.Page}");
-            // }
-        }
         private void OnInfo(object sender, RoutedEventArgs e)
         {
             var info = Renderer.GetInformation();
@@ -194,6 +210,7 @@ namespace PdfiumViewer.Demo
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
+
         private void OnTransparent(object sender, RoutedEventArgs e)
         {
             if ((Renderer.Flags & PdfRenderFlags.Transparent) != 0)
@@ -204,6 +221,125 @@ namespace PdfiumViewer.Demo
             {
                 Renderer.Flags |= PdfRenderFlags.Transparent;
             }
+        }
+
+        private void OpenCloseSearch(object sender, RoutedEventArgs e)
+        {
+            IsSearchOpen = !IsSearchOpen;
+            OnPropertyChanged(nameof(IsSearchOpen));
+        }
+
+        private void OnSearchTermKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                Search();
+            }
+        }
+
+        private void SaveAsImages(object sender, RoutedEventArgs e)
+        {
+            // Create a "Save As" dialog for selecting a directory (HACK)
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = "Select a Directory",
+                Filter = "Directory|*.this.directory",
+                FileName = "select"
+            };
+            // instead of default "Save As"
+            // Prevents displaying files
+            // Filename will then be "select.this.directory"
+            if (dialog.ShowDialog() == true)
+            {
+                string path = dialog.FileName;
+                // Remove fake filename from resulting path
+                path = path.Replace("\\select.this.directory", "");
+                path = path.Replace(".this.directory", "");
+                // If user has changed the filename, create the new directory
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+                // Our final value is in path
+                SaveAsImages(path);
+            }
+        }
+
+        private void SaveAsImages(string path)
+        {
+            try
+            {
+                for (var i = 0; i < Renderer.PageCount; i++)
+                {
+                    var size = Renderer.Document.PageSizes[i];
+                    var image = Renderer.Document.Render(i, (int)size.Width * 5, (int)size.Height * 5, 300, 300, false);
+                    image.Save(Path.Combine(path, $"img{i}.png"));
+                }
+            }
+            catch (Exception ex)
+            {
+                Cts.Cancel();
+                Debug.Fail(ex.Message);
+                MessageBox.Show(this, ex.Message, "Error!");
+            }
+        }
+
+        private void Search()
+        {
+            SearchMatchItemNo = 0;
+            SearchManager.MatchCase = MatchCaseCheckBox.IsChecked.GetValueOrDefault();
+            SearchManager.MatchWholeWord = WholeWordOnlyCheckBox.IsChecked.GetValueOrDefault();
+            SearchManager.HighlightAllMatches = HighlightAllMatchesCheckBox.IsChecked.GetValueOrDefault();
+            SearchMatchesTextBlock.Visibility = Visibility.Visible;
+
+            if (!SearchManager.Search(SearchTerm))
+            {
+                MessageBox.Show(this, "No matches found.");
+            }
+            else
+            {
+                SearchMatchesCount = SearchManager.MatchesCount;
+                // DisplayTextSpan(SearchMatches.Items[SearchMatchItemNo++].TextSpan);
+            }
+            
+            if (!SearchManager.FindNext(true))
+                MessageBox.Show(this, "Find reached the starting point of the search.");
+        }
+
+        private void DisplayTextSpan(PdfTextSpan span)
+        {
+            Page = span.Page + 1;
+            Renderer.ScrollToVerticalOffset(span.Offset);
+        }
+
+        private void OnNextFoundClick(object sender, RoutedEventArgs e)
+        {
+            if (SearchMatchesCount > SearchMatchItemNo)
+            {
+                SearchMatchItemNo++;
+                //DisplayTextSpan(SearchMatches.Items[SearchMatchItemNo - 1].TextSpan);
+                SearchManager.FindNext(true);
+            }
+        }
+
+        private void OnPrevFoundClick(object sender, RoutedEventArgs e)
+        {
+            if (SearchMatchItemNo > 1)
+            {
+                SearchMatchItemNo--;
+                // DisplayTextSpan(SearchMatches.Items[SearchMatchItemNo - 1].TextSpan);
+                SearchManager.FindNext(false);
+            }
+        }
+        
+        private void ToRtlClick(object sender, RoutedEventArgs e)
+        {
+            Renderer.IsRightToLeft = true;
+        }
+
+        private void ToLtrClick(object sender, RoutedEventArgs e)
+        {
+            Renderer.IsRightToLeft = false;
         }
     }
 }
