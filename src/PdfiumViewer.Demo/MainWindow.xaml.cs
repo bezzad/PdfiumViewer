@@ -1,125 +1,345 @@
 ﻿using Microsoft.Win32;
+using PdfiumViewer.Core;
+using PdfiumViewer.Demo.Annotations;
+using PdfiumViewer.Drawing;
+using PdfiumViewer.Enums;
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Media.Imaging;
+using System.Windows.Input;
 
 namespace PdfiumViewer.Demo
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        CancellationTokenSource tokenSource;
-        Process currentProcess = Process.GetCurrentProcess();
-        PdfDocument pdfDoc;
+        private Process CurrentProcess { get; }
+        private CancellationTokenSource Cts { get; }
+        private System.Windows.Threading.DispatcherTimer MemoryChecker { get; }
+        private PdfSearchManager SearchManager { get; }
+
+        public string InfoText { get; set; }
+        public string SearchTerm { get; set; }
+
+        public double ZoomPercent
+        {
+            get => Renderer.Zoom * 100;
+            set => Renderer.SetZoom(value / 100);
+        }
+        public bool IsSearchOpen { get; set; }
+        public int SearchMatchItemNo { get; set; }
+        public int SearchMatchesCount { get; set; }
+        public int Page
+        {
+            get => Renderer.PageNo + 1;
+            set => Renderer.PageNo = Math.Min(Math.Max(value - 1, 0), Renderer.PageCount - 1);
+        }
 
 
         public MainWindow()
         {
             InitializeComponent();
 
-            tokenSource = new CancellationTokenSource();
+            CurrentProcess = Process.GetCurrentProcess();
+            Cts = new CancellationTokenSource();
+            DataContext = this;
+            Renderer.PropertyChanged += delegate
+            {
+                OnPropertyChanged(nameof(Page));
+                OnPropertyChanged(nameof(ZoomPercent));
+            };
+
+            MemoryChecker = new System.Windows.Threading.DispatcherTimer();
+            MemoryChecker.Tick += OnMemoryChecker;
+            MemoryChecker.Interval = new TimeSpan(0, 0, 1);
+            MemoryChecker.Start();
+
+            SearchManager = new PdfSearchManager(Renderer);
+            MatchCaseCheckBox.IsChecked = SearchManager.MatchCase;
+            WholeWordOnlyCheckBox.IsChecked = SearchManager.MatchWholeWord;
+            HighlightAllMatchesCheckBox.IsChecked = SearchManager.HighlightAllMatches;
         }
 
-        private async void RenderToMemDCButton_Click(object sender, RoutedEventArgs e)
+        private void OnMemoryChecker(object sender, EventArgs e)
         {
-            if (pdfDoc == null)
-            {
-                MessageBox.Show("First load the document");
-                return;
-            }
+            CurrentProcess.Refresh();
+            InfoText = $"Memory: {CurrentProcess.PrivateMemorySize64 / 1024 / 1024} MB";
+            OnPropertyChanged(nameof(InfoText));
+        }
 
-            int width = (int)(this.ActualWidth - 30) / 2;
-            int height = (int)this.ActualHeight - 30;
 
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-
+        private async void RenderToMemory(object sender, RoutedEventArgs e)
+        {
             try
             {
-                for (int i = 0; i < pdfDoc.PageCount; i++)
+                var pageStep = Renderer.PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode ? 2 : 1;
+                Dispatcher.Invoke(() => Renderer.PageNo = 0);
+                while (Renderer.PageNo < Renderer.PageCount - pageStep)
                 {
-                    imageMemDC.Source = await Task.Run(() =>
-                    {
-                        tokenSource.Token.ThrowIfCancellationRequested();
-                        return RenderPageToMemDC(i, width, height);
-                    }, tokenSource.Token);
-
-                    labelMemDC.Content =
-                        $"Renderd Pages: {i}, Memory: {currentProcess.PrivateMemorySize64 / (1920 * 1080)} MB, Time: {sw.Elapsed.TotalSeconds:0.0} sec";
-
-                    currentProcess.Refresh();
-
-                    GC.Collect();
+                    Dispatcher.Invoke(() => Renderer.NextPage());
+                    await Task.Delay(1);
                 }
             }
             catch (Exception ex)
             {
-                tokenSource.Cancel();
-                MessageBox.Show(ex.Message);
+                Cts.Cancel();
+                Debug.Fail(ex.Message);
+                MessageBox.Show(this, ex.Message, "Error!");
             }
-
-            sw.Stop();
-            labelMemDC.Content =
-                $"Rendered {pdfDoc.PageCount} Pages within {sw.Elapsed.TotalSeconds:0.0} seconds, Memory: {currentProcess.PrivateMemorySize64 / (1024 * 1024)} MB";
         }
 
-        private BitmapSource RenderPageToMemDC(int page, int width, int height)
-        {
-            var image = pdfDoc.Render(page, width, height, 300, 300, false);
-            return BitmapHelper.ToBitmapSource(image);
-        }
-
-        private void LoadPDFButton_Click(object sender, RoutedEventArgs e)
+        private void OpenPdf(object sender, RoutedEventArgs e)
         {
             var dialog = new OpenFileDialog
             {
-                Filter = "PDF Files (*.pdf)|*.pdf|All Files (*.*)|*.*", Title = "Open PDF File"
+                Filter = "PDF Files (*.pdf)|*.pdf|All Files (*.*)|*.*",
+                Title = "Open PDF File"
             };
 
             if (dialog.ShowDialog() == true)
             {
                 var bytes = File.ReadAllBytes(dialog.FileName);
                 var mem = new MemoryStream(bytes);
-                pdfDoc = PdfDocument.Load(mem);
+                Renderer.OpenPdf(mem);
             }
         }
-
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
 
-            tokenSource?.Cancel();
-            pdfDoc?.Dispose();
+            MemoryChecker?.Stop();
+            Renderer?.Dispose();
         }
 
-        private void DoSearch_Click(object sender, RoutedEventArgs e)
+        private void OnPrevPageClick(object sender, RoutedEventArgs e)
         {
-            string text = searchValueTextBox.Text;
-            bool matchCase = matchCaseCheckBox.IsChecked.GetValueOrDefault();
-            bool wholeWordOnly = wholeWordOnlyCheckBox.IsChecked.GetValueOrDefault();
-
-            DoSearch(text, matchCase, wholeWordOnly);
+            Renderer.PreviousPage();
+        }
+        private void OnNextPageClick(object sender, RoutedEventArgs e)
+        {
+            Renderer.NextPage();
         }
 
-        private void DoSearch(string text, bool matchCase, bool wholeWord)
+        private void OnFitWidth(object sender, RoutedEventArgs e)
         {
-            var matches = pdfDoc.Search(text, matchCase, wholeWord);
+            Renderer.SetZoomMode(PdfViewerZoomMode.FitWidth);
+        }
+        private void OnFitHeight(object sender, RoutedEventArgs e)
+        {
+            Renderer.SetZoomMode(PdfViewerZoomMode.FitHeight);
+        }
+
+        private void OnZoomInClick(object sender, RoutedEventArgs e)
+        {
+            Renderer.ZoomIn();
+        }
+
+        private void OnZoomOutClick(object sender, RoutedEventArgs e)
+        {
+            Renderer.ZoomOut();
+        }
+
+        private void OnRotateLeftClick(object sender, RoutedEventArgs e)
+        {
+            Renderer.Counterclockwise();
+        }
+
+        private void OnRotateRightClick(object sender, RoutedEventArgs e)
+        {
+            Renderer.ClockwiseRotate();
+        }
+
+        private void OnInfo(object sender, RoutedEventArgs e)
+        {
+            var info = Renderer.GetInformation();
             var sb = new StringBuilder();
+            sb.AppendLine($"Author: {info.Author}");
+            sb.AppendLine($"Creator: {info.Creator}");
+            sb.AppendLine($"Keywords: {info.Keywords}");
+            sb.AppendLine($"Producer: {info.Producer}");
+            sb.AppendLine($"Subject: {info.Subject}");
+            sb.AppendLine($"Title: {info.Title}");
+            sb.AppendLine($"Create Date: {info.CreationDate}");
+            sb.AppendLine($"Modified Date: {info.ModificationDate}");
 
-            foreach (var match in matches.Items)
-            {
-                sb.AppendLine($"Found \"{match.Text}\" in page: {match.Page}");
-            }
-
-            searchResultLabel.Text = sb.ToString();
+            MessageBox.Show(sb.ToString(), "Information", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
+        private void OnGetText(object sender, RoutedEventArgs e)
+        {
+            var txtViewer = new TextViewer();
+            var page = Renderer.PageNo;
+            txtViewer.Body = Renderer.GetPdfText(page);
+            txtViewer.Caption = $"Page {page + 1} contains {txtViewer.Body.Length} character(s):";
+            txtViewer.ShowDialog();
+        }
+
+        private void OnDisplayBookmarks(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void OnContinuousModeClick(object sender, RoutedEventArgs e)
+        {
+            Renderer.PagesDisplayMode = PdfViewerPagesDisplayMode.ContinuousMode;
+        }
+
+        private void OnBookModeClick(object sender, RoutedEventArgs e)
+        {
+            Renderer.PagesDisplayMode = PdfViewerPagesDisplayMode.BookMode;
+        }
+
+        private void OnSinglePageModeClick(object sender, RoutedEventArgs e)
+        {
+            Renderer.PagesDisplayMode = PdfViewerPagesDisplayMode.SinglePageMode;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+
+        private void OnTransparent(object sender, RoutedEventArgs e)
+        {
+            if ((Renderer.Flags & PdfRenderFlags.Transparent) != 0)
+            {
+                Renderer.Flags &= ~PdfRenderFlags.Transparent;
+            }
+            else
+            {
+                Renderer.Flags |= PdfRenderFlags.Transparent;
+            }
+        }
+
+        private void OpenCloseSearch(object sender, RoutedEventArgs e)
+        {
+            IsSearchOpen = !IsSearchOpen;
+            OnPropertyChanged(nameof(IsSearchOpen));
+        }
+
+        private void OnSearchTermKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                Search();
+            }
+        }
+
+        private void SaveAsImages(object sender, RoutedEventArgs e)
+        {
+            // Create a "Save As" dialog for selecting a directory (HACK)
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = "Select a Directory",
+                Filter = "Directory|*.this.directory",
+                FileName = "select"
+            };
+            // instead of default "Save As"
+            // Prevents displaying files
+            // Filename will then be "select.this.directory"
+            if (dialog.ShowDialog() == true)
+            {
+                string path = dialog.FileName;
+                // Remove fake filename from resulting path
+                path = path.Replace("\\select.this.directory", "");
+                path = path.Replace(".this.directory", "");
+                // If user has changed the filename, create the new directory
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+                // Our final value is in path
+                SaveAsImages(path);
+            }
+        }
+
+        private void SaveAsImages(string path)
+        {
+            try
+            {
+                for (var i = 0; i < Renderer.PageCount; i++)
+                {
+                    var size = Renderer.Document.PageSizes[i];
+                    var image = Renderer.Document.Render(i, (int)size.Width * 5, (int)size.Height * 5, 300, 300, false);
+                    image.Save(Path.Combine(path, $"img{i}.png"));
+                }
+            }
+            catch (Exception ex)
+            {
+                Cts.Cancel();
+                Debug.Fail(ex.Message);
+                MessageBox.Show(this, ex.Message, "Error!");
+            }
+        }
+
+        private void Search()
+        {
+            SearchMatchItemNo = 0;
+            SearchManager.MatchCase = MatchCaseCheckBox.IsChecked.GetValueOrDefault();
+            SearchManager.MatchWholeWord = WholeWordOnlyCheckBox.IsChecked.GetValueOrDefault();
+            SearchManager.HighlightAllMatches = HighlightAllMatchesCheckBox.IsChecked.GetValueOrDefault();
+            SearchMatchesTextBlock.Visibility = Visibility.Visible;
+
+            if (!SearchManager.Search(SearchTerm))
+            {
+                MessageBox.Show(this, "No matches found.");
+            }
+            else
+            {
+                SearchMatchesCount = SearchManager.MatchesCount;
+                // DisplayTextSpan(SearchMatches.Items[SearchMatchItemNo++].TextSpan);
+            }
+            
+            if (!SearchManager.FindNext(true))
+                MessageBox.Show(this, "Find reached the starting point of the search.");
+        }
+
+        private void DisplayTextSpan(PdfTextSpan span)
+        {
+            Page = span.Page + 1;
+            Renderer.ScrollToVerticalOffset(span.Offset);
+        }
+
+        private void OnNextFoundClick(object sender, RoutedEventArgs e)
+        {
+            if (SearchMatchesCount > SearchMatchItemNo)
+            {
+                SearchMatchItemNo++;
+                //DisplayTextSpan(SearchMatches.Items[SearchMatchItemNo - 1].TextSpan);
+                SearchManager.FindNext(true);
+            }
+        }
+
+        private void OnPrevFoundClick(object sender, RoutedEventArgs e)
+        {
+            if (SearchMatchItemNo > 1)
+            {
+                SearchMatchItemNo--;
+                // DisplayTextSpan(SearchMatches.Items[SearchMatchItemNo - 1].TextSpan);
+                SearchManager.FindNext(false);
+            }
+        }
+        
+        private void ToRtlClick(object sender, RoutedEventArgs e)
+        {
+            Renderer.IsRightToLeft = true;
+        }
+
+        private void ToLtrClick(object sender, RoutedEventArgs e)
+        {
+            Renderer.IsRightToLeft = false;
+        }
     }
 }

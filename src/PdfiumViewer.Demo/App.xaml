@@ -2,8 +2,11 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:PdfiumViewer.Demo"
+             xmlns:converters="clr-namespace:PdfiumViewer.Demo.Converters"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+
+        <converters:IconToImageSourceConverter x:Key="IconToImageSourceConverter" />
+        <converters:MathConverter x:Key="MathConverter" />
     </Application.Resources>
 </Application>
