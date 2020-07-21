@@ -57,6 +57,7 @@ namespace PdfiumViewer
             RenderedFramesMap = new ConcurrentDictionary<int, Image>();
         }
 
+        public event EventHandler<int> PageChanged;
         public event EventHandler MouseClick;
         public const double DefaultZoomMin = 0.1;
         public const double DefaultZoomMax = 5;
@@ -236,7 +237,7 @@ namespace PdfiumViewer
 
             GC.Collect();
         }
-
+        
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
             base.OnRenderSizeChanged(sizeInfo);
