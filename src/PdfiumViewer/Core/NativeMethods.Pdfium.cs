@@ -499,7 +499,7 @@ namespace PdfiumViewer.Core
             }
             finally
             {
-                StreamManager.Unregister(id);
+                StreamManager.UnRegister(id);
             }
         }
 
@@ -523,7 +523,7 @@ namespace PdfiumViewer.Core
             }
             finally
             {
-                StreamManager.Unregister(id);
+                StreamManager.UnRegister(id);
             }
         }
 

@@ -608,7 +608,7 @@ namespace PdfiumViewer.Core
         {
             if (!_disposed)
             {
-                StreamManager.Unregister(_id);
+                StreamManager.UnRegister(_id);
 
                 if (_form != IntPtr.Zero)
                 {

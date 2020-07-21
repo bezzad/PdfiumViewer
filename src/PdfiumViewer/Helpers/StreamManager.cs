@@ -1,44 +1,35 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.IO;
+using System.Threading;
 
 namespace PdfiumViewer.Helpers
 {
     internal static class StreamManager
     {
-        private static readonly object _syncRoot = new object();
-        private static int _nextId = 1;
-        private static readonly Dictionary<int, Stream> _files = new Dictionary<int, Stream>();
+        private static int _nextId;
+        private static readonly ConcurrentDictionary<int, Stream> Files = new ConcurrentDictionary<int, Stream>();
 
         public static int Register(Stream stream)
         {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
 
-            lock (_syncRoot)
-            {
-                var id = _nextId++;
-                _files.Add(id, stream);
-                return id;
-            }
+            var id = Interlocked.Increment(ref _nextId);
+            Files.TryAdd(id, stream);
+            return id;
         }
 
-        public static void Unregister(int id)
+        public static void UnRegister(int id)
         {
-            lock (_syncRoot)
-            {
-                _files.Remove(id);
-            }
+            Files.TryRemove(id, out var stream);
+            stream?.Dispose();
         }
 
         public static Stream Get(int id)
         {
-            lock (_syncRoot)
-            {
-                Stream stream;
-                _files.TryGetValue(id, out stream);
-                return stream;
-            }
+            Files.TryGetValue(id, out var stream);
+            return stream;
         }
     }
 }
