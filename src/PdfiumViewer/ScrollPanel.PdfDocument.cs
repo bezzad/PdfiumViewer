@@ -157,6 +157,7 @@ namespace PdfiumViewer
                     RenderPage(Frame2, page + 1, (int)(CurrentPageSize.Width * Zoom), (int)(CurrentPageSize.Height * Zoom));
                 }
 
+                CurrentPageNo = page;
                 PageChanged?.Invoke(this, PageNo);
             }
         }

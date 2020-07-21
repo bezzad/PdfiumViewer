@@ -73,10 +73,15 @@ namespace PdfiumViewer
         protected ConcurrentDictionary<int, Image> RenderedFramesMap { get; set; }
         protected Size CurrentPageSize { get; set; }
         protected int ScrollWidth { get; set; }
+        protected int CurrentPageNo;
 
         public event PropertyChangedEventHandler PropertyChanged;
         public PdfDocument Document { get; set; }
-        public int PageNo { get; set; }
+        public int PageNo
+        {
+            get => CurrentPageNo;
+            set => CurrentPageNo = value;
+        }
         public int Dpi { get; set; }
         public PdfViewerZoomMode ZoomMode { get; protected set; }
         public PdfRenderFlags Flags { get; set; }
