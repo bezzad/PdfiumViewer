@@ -108,7 +108,17 @@ namespace PdfiumViewer
         public PdfBookmarkCollection Bookmarks => Document?.Bookmarks;
         public IList<SizeF> PageSizes => Document?.PageSizes;
 
-
+        protected void ScrollToPage(int page)
+        {
+            if (PagesDisplayMode == PdfViewerPagesDisplayMode.ContinuousMode)
+            {
+                // scroll to current page
+                // Frames[page].BringIntoView(); 
+                var pageSize = CalculatePageSize(page);
+                var verticalOffset = page * (pageSize.Height + FrameSpace.Top + FrameSpace.Bottom);
+                ScrollToVerticalOffset(verticalOffset);
+            }
+        }
         protected void OnPageNoChanged()
         {
             GotoPage(PageNo);
@@ -146,8 +156,8 @@ namespace PdfiumViewer
                     Frames[i] ??= new Image { Margin = FrameSpace };
 
                     var pageSize = CalculatePageSize(i);
-                    Frames[i].Width = pageSize.Width * Zoom;
-                    Frames[i].Height = pageSize.Height * Zoom;
+                    Frames[i].Width = pageSize.Width;
+                    Frames[i].Height = pageSize.Height;
 
                     Panel.Children.Add(Frames[i]);
                 }
@@ -223,7 +233,7 @@ namespace PdfiumViewer
                         Zoom /= 2;
                 }
 
-                return new Size((int)currentPageSize.Width, (int)currentPageSize.Height);
+                return new Size((int)(currentPageSize.Width * Zoom), (int)(currentPageSize.Height * Zoom));
             }
 
             return new Size();
@@ -239,10 +249,8 @@ namespace PdfiumViewer
                     frame.Source = null;
                 }
             }
-
-            GC.Collect();
         }
-        
+
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
             base.OnRenderSizeChanged(sizeInfo);
@@ -357,18 +365,18 @@ namespace PdfiumViewer
                 var height = e.ViewportHeight;
                 var pageSize = CalculatePageSize(0);
 
-                var startFrameIndex = startOffset / (pageSize.Height * Zoom + FrameSpace.Top + FrameSpace.Bottom);
-                var endFrameIndex = (startOffset + height) / (pageSize.Height * Zoom + FrameSpace.Top + FrameSpace.Bottom);
+                var startFrameIndex = (int)(startOffset / (pageSize.Height + FrameSpace.Top + FrameSpace.Bottom));
+                var endFrameIndex = (int)((startOffset + height) / (pageSize.Height + FrameSpace.Top + FrameSpace.Bottom));
 
-                PageNo = (int)Math.Min(Math.Max(startFrameIndex, 0), PageCount - 1);
-                var endPageIndex = (int)Math.Min(Math.Max(endFrameIndex, 0), PageCount - 1);
+                PageNo = Math.Min(Math.Max(startFrameIndex, 0), PageCount - 1);
+                var endPageIndex = Math.Min(Math.Max(endFrameIndex, 0), PageCount - 1);
 
                 ReleaseFrames(PageNo, endPageIndex);
 
                 for (var page = PageNo; page <= endPageIndex; page++)
                 {
                     var frame = Frames[page];
-                    if (frame.Source == null)// && frame.IsUserVisible())
+                    if (frame.Source == null) // && frame.IsUserVisible())
                     {
                         RenderPage(frame, page, (int)frame.Width, (int)frame.Height);
                         RenderedFramesMap.TryAdd(page, frame);

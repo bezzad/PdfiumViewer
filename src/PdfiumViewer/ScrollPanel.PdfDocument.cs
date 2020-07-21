@@ -22,27 +22,27 @@ namespace PdfiumViewer
             Document.Render(page, graphics, dpiX, dpiY, bounds, flags);
         }
 
-        public System.Drawing.Image Render(int page, float dpiX, float dpiY, bool forPrinting)
+        public Image Render(int page, float dpiX, float dpiY, bool forPrinting)
         {
             return Document.Render(page, dpiX, dpiY, forPrinting);
         }
 
-        public System.Drawing.Image Render(int page, float dpiX, float dpiY, PdfRenderFlags flags)
+        public Image Render(int page, float dpiX, float dpiY, PdfRenderFlags flags)
         {
             return Document.Render(page, dpiX, dpiY, flags);
         }
 
-        public System.Drawing.Image Render(int page, int width, int height, float dpiX, float dpiY, bool forPrinting)
+        public Image Render(int page, int width, int height, float dpiX, float dpiY, bool forPrinting)
         {
             return Document.Render(page, width, height, dpiX, dpiY, forPrinting);
         }
 
-        public System.Drawing.Image Render(int page, int width, int height, float dpiX, float dpiY, PdfRenderFlags flags)
+        public Image Render(int page, int width, int height, float dpiX, float dpiY, PdfRenderFlags flags)
         {
             return Document.Render(page, width, height, dpiX, dpiY, flags);
         }
 
-        public System.Drawing.Image Render(int page, int width, int height, float dpiX, float dpiY, PdfRotation rotate, PdfRenderFlags flags)
+        public Image Render(int page, int width, int height, float dpiX, float dpiY, PdfRotation rotate, PdfRenderFlags flags)
         {
             return Document.Render(page, width, height, dpiX, dpiY, rotate, flags);
         }
@@ -150,15 +150,16 @@ namespace PdfiumViewer
             {
                 CurrentPageSize = CalculatePageSize(page);
 
-                RenderPage(Frame1, page, (int)(CurrentPageSize.Width * Zoom), (int)(CurrentPageSize.Height * Zoom));
+                RenderPage(Frame1, page, CurrentPageSize.Width, CurrentPageSize.Height);
 
                 if (PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode && page + 1 < Document.PageCount)
                 {
-                    RenderPage(Frame2, page + 1, (int)(CurrentPageSize.Width * Zoom), (int)(CurrentPageSize.Height * Zoom));
+                    RenderPage(Frame2, page + 1, CurrentPageSize.Width, CurrentPageSize.Height);
                 }
 
                 CurrentPageNo = page;
                 PageChanged?.Invoke(this, PageNo);
+                ScrollToPage(PageNo);
             }
         }
         public void NextPage()
@@ -167,9 +168,6 @@ namespace PdfiumViewer
             {
                 var extentVal = PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode ? 2 : 1;
                 PageNo = Math.Min(Math.Max(PageNo + extentVal, 0), PageCount - extentVal);
-
-                if (PagesDisplayMode == PdfViewerPagesDisplayMode.ContinuousMode)
-                    Frames[PageNo].BringIntoView(); // scroll to current page
             }
         }
         public void PreviousPage()
@@ -178,9 +176,6 @@ namespace PdfiumViewer
             {
                 var extentVal = PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode ? 2 : 1;
                 PageNo = Math.Min(Math.Max(PageNo - extentVal, 0), PageCount - extentVal);
-
-                if (PagesDisplayMode == PdfViewerPagesDisplayMode.ContinuousMode)
-                    Frames[PageNo].BringIntoView(); // scroll to current page
             }
         }
     }
