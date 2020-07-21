@@ -7,7 +7,7 @@
         xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:converters="clr-namespace:PdfiumViewer.Demo.Converters"
         mc:Ignorable="d"
-        Title="PDFium Viewer WPF Demo" Height="450" Width="800" Background="LightGray">
+        Title="PDFium Viewer WPF Demo" Height="450" Width="1079" Background="LightGray">
     <Grid >
         <Grid.RowDefinitions>
             <RowDefinition Height="40"/>

@@ -57,7 +57,7 @@ namespace PdfiumViewer
             RenderedFramesMap = new ConcurrentDictionary<int, Image>();
         }
 
-
+        public event EventHandler MouseClick;
         public const double DefaultZoomMin = 0.1;
         public const double DefaultZoomMax = 5;
         public const double DefaultZoomFactor = 1.2;
@@ -70,7 +70,7 @@ namespace PdfiumViewer
         protected Image Frame2 => Frames?.Length > 1 ? Frames[1] : null;
         protected Image[] Frames { get; set; }
         protected ConcurrentDictionary<int, Image> RenderedFramesMap { get; set; }
-        protected System.Drawing.Size CurrentPageSize { get; set; }
+        protected Size CurrentPageSize { get; set; }
         protected int ScrollWidth { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -152,6 +152,12 @@ namespace PdfiumViewer
                 GC.Collect();
                 GotoPage(PageNo);
             }
+        }
+
+        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+        {
+            base.OnMouseLeftButtonDown(e);
+            MouseClick?.Invoke(this, EventArgs.Empty);
         }
         protected void OnFlagsChanged()
         {
