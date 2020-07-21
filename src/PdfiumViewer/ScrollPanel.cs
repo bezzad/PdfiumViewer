@@ -88,7 +88,7 @@ namespace PdfiumViewer
             get => Panel.FlowDirection == FlowDirection.RightToLeft;
             set => Panel.FlowDirection = value ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
         }
-        public bool IsDocumentLoaded => Document != null;
+        public bool IsDocumentLoaded => Document != null && ActualWidth > 0 && ActualHeight > 0;
         public int PageCount => Document?.PageCount ?? 0;
         /// <summary>
         /// Gets or sets the current zoom level.
@@ -201,7 +201,7 @@ namespace PdfiumViewer
             var containerWidth = ActualWidth - Padding.Left - Padding.Right - FrameSpace.Left - FrameSpace.Right; // ViewportWidth
             var containerHeight = ActualHeight - Padding.Top - Padding.Bottom - FrameSpace.Top - FrameSpace.Bottom; // ViewportHeight
 
-            if (IsDocumentLoaded)
+            if (IsDocumentLoaded && containerWidth > 0 && containerHeight > 0)
             {
                 var currentPageSize = Document.PageSizes[page.Value];
                 if (isReverse)
