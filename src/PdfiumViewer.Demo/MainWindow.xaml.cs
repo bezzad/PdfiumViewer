@@ -6,7 +6,6 @@ using PdfiumViewer.Enums;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -41,7 +40,7 @@ namespace PdfiumViewer.Demo
         public int Page
         {
             get => Renderer.PageNo + 1;
-            set => Renderer.PageNo = Math.Min(Math.Max(value - 1, 0), Renderer.PageCount - 1);
+            set => Renderer.GotoPage(Math.Min(Math.Max(value - 1, 0), Renderer.PageCount - 1));
         }
 
 
@@ -82,7 +81,7 @@ namespace PdfiumViewer.Demo
             try
             {
                 var pageStep = Renderer.PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode ? 2 : 1;
-                Dispatcher.Invoke(() => Renderer.PageNo = 0);
+                Dispatcher.Invoke(() => Renderer.GotoPage(0));
                 while (Renderer.PageNo < Renderer.PageCount - pageStep)
                 {
                     Dispatcher.Invoke(() => Renderer.NextPage());
