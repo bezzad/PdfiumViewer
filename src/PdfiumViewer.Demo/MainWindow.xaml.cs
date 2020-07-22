@@ -6,6 +6,7 @@ using PdfiumViewer.Enums;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -301,7 +302,7 @@ namespace PdfiumViewer.Demo
                 SearchMatchesCount = SearchManager.MatchesCount;
                 // DisplayTextSpan(SearchMatches.Items[SearchMatchItemNo++].TextSpan);
             }
-            
+
             if (!SearchManager.FindNext(true))
                 MessageBox.Show(this, "Find reached the starting point of the search.");
         }
@@ -331,7 +332,7 @@ namespace PdfiumViewer.Demo
                 SearchManager.FindNext(false);
             }
         }
-        
+
         private void ToRtlClick(object sender, RoutedEventArgs e)
         {
             Renderer.IsRightToLeft = true;
@@ -340,6 +341,21 @@ namespace PdfiumViewer.Demo
         private void ToLtrClick(object sender, RoutedEventArgs e)
         {
             Renderer.IsRightToLeft = false;
+        }
+
+        private async void OnClosePdf(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                InfoBar.Foreground = System.Windows.Media.Brushes.Red;
+                Renderer.UnLoad();
+                await Task.Delay(5000);
+                InfoBar.Foreground = System.Windows.Media.Brushes.Black;
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception);
+            }
         }
     }
 }
