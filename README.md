@@ -1,3 +1,6 @@
+[![NuGet](https://img.shields.io/nuget/dt/downloader.svg)](https://www.nuget.org/packages/PdfiumViewer.WPF) 
+[![NuGet](https://img.shields.io/nuget/vpre/downloader.svg)](https://www.nuget.org/packages/PdfiumViewer.WPF)
+
 # PdfiumViewer
 
 Apache 2.0 License.
@@ -5,7 +8,9 @@ Apache 2.0 License.
 > Note: this is a .Net Core port of [PdfiumViewer](https://github.com/pvginkel/PdfiumViewer)
 
 
-[Download from NuGet](http://nuget.org/packages/PdfiumViewer).
+[Download from NuGet](http://nuget.org/packages/PdfiumViewer.WPF).
+
+![PdfiumViewer.WPF](https://raw.githubusercontent.com/bezzad/PdfiumViewer/master/screenshot.png)
 
 ## Archived
 
