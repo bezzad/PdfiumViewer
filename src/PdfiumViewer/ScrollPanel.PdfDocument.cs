@@ -142,7 +142,7 @@ namespace PdfiumViewer
         {
             return Document.RectangleFromPdf(page, rect);
         }
-        
+
 
         public void GotoPage(int page)
         {
@@ -157,8 +157,7 @@ namespace PdfiumViewer
                     RenderPage(Frame2, page + 1, CurrentPageSize.Width, CurrentPageSize.Height);
                 }
 
-                CurrentPageNo = page;
-                PageChanged?.Invoke(this, PageNo);
+                PageNo = page;
                 ScrollToPage(PageNo);
             }
         }
@@ -167,7 +166,7 @@ namespace PdfiumViewer
             if (IsDocumentLoaded)
             {
                 var extentVal = PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode ? 2 : 1;
-                PageNo = Math.Min(Math.Max(PageNo + extentVal, 0), PageCount - extentVal);
+                GotoPage(Math.Min(Math.Max(PageNo + extentVal, 0), PageCount - extentVal));
             }
         }
         public void PreviousPage()
@@ -175,7 +174,7 @@ namespace PdfiumViewer
             if (IsDocumentLoaded)
             {
                 var extentVal = PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode ? 2 : 1;
-                PageNo = Math.Min(Math.Max(PageNo - extentVal, 0), PageCount - extentVal);
+                GotoPage(Math.Min(Math.Max(PageNo - extentVal, 0), PageCount - extentVal));
             }
         }
     }

@@ -63,8 +63,8 @@ namespace PdfiumViewer
             Document?.Dispose();
             Document = null;
             Frames = null;
+            _markers = null;
             Panel.Children.Clear();
-            RenderedFramesMap?.Clear();
             GC.Collect();
         }
         public void ClockwiseRotate()
@@ -258,8 +258,8 @@ namespace PdfiumViewer
         {
             if (disposing)
             {
-                base.Dispose(disposing);
-                _markers = null;
+                base.Dispose(true);
+                UnLoad();
                 GC.SuppressFinalize(this);
                 GC.Collect();
             }
