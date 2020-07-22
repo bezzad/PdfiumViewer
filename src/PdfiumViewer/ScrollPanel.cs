@@ -62,6 +62,7 @@ namespace PdfiumViewer
         public const double DefaultZoomMin = 0.1;
         public const double DefaultZoomMax = 5;
         public const double DefaultZoomFactor = 1.2;
+        protected bool IsDisposed = false;
         protected const int SmallScrollChange = 1;
         protected const int LargeScrollChange = 10;
         protected Process CurrentProcess { get; } = Process.GetCurrentProcess();
@@ -455,9 +456,18 @@ namespace PdfiumViewer
             }
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                IsDisposed = true;
+                Document?.Dispose();
+            }
+        }
+
         public void Dispose()
         {
-            Document?.Dispose();
+            Dispose(!IsDisposed);
         }
     }
 }

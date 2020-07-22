@@ -28,18 +28,21 @@ namespace PdfiumViewer
 
         public void OpenPdf(string path, bool isRightToLeft = false)
         {
+            Document?.Dispose();
             IsRightToLeft = isRightToLeft;
             Document = PdfDocument.Load(path);
             GotoPage(PageNo = 0);
         }
         public void OpenPdf(string path, string password, bool isRightToLeft = false)
         {
+            Document?.Dispose();
             IsRightToLeft = isRightToLeft;
             Document = PdfDocument.Load(path, password);
             GotoPage(PageNo = 0);
         }
         public void OpenPdf(Stream stream, bool isRightToLeft = false)
         {
+            Document?.Dispose();
             IsRightToLeft = isRightToLeft;
             Document = PdfDocument.Load(stream);
             PageNo = 0;
@@ -47,6 +50,7 @@ namespace PdfiumViewer
         }
         public void OpenPdf(Stream stream, string password, bool isRightToLeft = false)
         {
+            Document?.Dispose();
             IsRightToLeft = isRightToLeft;
             Document = PdfDocument.Load(stream, password);
             GotoPage(PageNo = 0);
@@ -237,5 +241,18 @@ namespace PdfiumViewer
 
             DrawMarkers(drawingContext, PageNo);
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                base.Dispose(disposing);
+                _markers = null;
+                GC.SuppressFinalize(this);
+                GC.Collect();
+            }
+        }
+
+        ~PdfRenderer() => Dispose(true);
     }
 }
