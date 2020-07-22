@@ -59,6 +59,10 @@ namespace PdfiumViewer
         {
             Document?.Dispose();
             Document = null;
+            Frames = null;
+            Panel.Children.Clear();
+            RenderedFramesMap?.Clear();
+            GC.Collect();
         }
         public void ClockwiseRotate()
         {
