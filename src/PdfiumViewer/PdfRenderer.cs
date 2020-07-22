@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Windows;
 using System.Windows.Media;
@@ -29,28 +28,44 @@ namespace PdfiumViewer
 
         public void OpenPdf(string path, bool isRightToLeft = false)
         {
+            UnLoad();
             IsRightToLeft = isRightToLeft;
             Document = PdfDocument.Load(path);
-            GotoPage(PageNo = 0);
+            OnPagesDisplayModeChanged();
+            GotoPage(0);
         }
         public void OpenPdf(string path, string password, bool isRightToLeft = false)
         {
+            UnLoad();
             IsRightToLeft = isRightToLeft;
             Document = PdfDocument.Load(path, password);
-            GotoPage(PageNo = 0);
+            OnPagesDisplayModeChanged();
+            GotoPage(0);
         }
         public void OpenPdf(Stream stream, bool isRightToLeft = false)
         {
+            UnLoad();
             IsRightToLeft = isRightToLeft;
             Document = PdfDocument.Load(stream);
-            PageNo = 0;
             OnPagesDisplayModeChanged();
+            GotoPage(0);
         }
         public void OpenPdf(Stream stream, string password, bool isRightToLeft = false)
         {
+            UnLoad();
             IsRightToLeft = isRightToLeft;
             Document = PdfDocument.Load(stream, password);
-            GotoPage(PageNo = 0);
+            OnPagesDisplayModeChanged();
+            GotoPage(0);
+        }
+        public void UnLoad()
+        {
+            Document?.Dispose();
+            Document = null;
+            Frames = null;
+            _markers = null;
+            Panel.Children.Clear();
+            GC.Collect();
         }
         public void ClockwiseRotate()
         {
@@ -238,5 +253,18 @@ namespace PdfiumViewer
 
             DrawMarkers(drawingContext, PageNo);
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                base.Dispose(true);
+                UnLoad();
+                GC.SuppressFinalize(this);
+                GC.Collect();
+            }
+        }
+
+        ~PdfRenderer() => Dispose(true);
     }
 }

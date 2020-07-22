@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\close_pdf.png" />
     <None Remove="Resources\continuous_mode.png" />
     <None Remove="Resources\find.png" />
     <None Remove="Resources\fit_height.png" />
@@ -41,6 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Resources\close_pdf.png" />
     <Resource Include="Resources\continuous_mode.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>

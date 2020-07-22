@@ -7,7 +7,7 @@
         xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:converters="clr-namespace:PdfiumViewer.Demo.Converters"
         mc:Ignorable="d"
-        Title="PDFium Viewer WPF Demo" Height="450" Width="800" Background="LightGray">
+        Title="PDFium Viewer WPF Demo" Height="450" Width="1118" Background="LightGray">
     <Grid >
         <Grid.RowDefinitions>
             <RowDefinition Height="40"/>
@@ -165,6 +165,9 @@
             <Button ToolTip="Pdf Information" Click="OnInfo">
                 <Image Source="Resources/info.png" />
             </Button>
+            <Button ToolTip="Close PDF" Click="OnClosePdf">
+                <Image Source="Resources/close_pdf.png" />
+            </Button>
         </ToolBar>
 
         <pdfiumViewer:PdfRenderer Grid.Row="1" Grid.Column="0" Name="Renderer" Padding="10"/>
@@ -173,7 +176,7 @@
             <StatusBarItem Content="Page:" />
             <StatusBarItem Content="{Binding Page, Mode=OneWay}" />
             <StatusBarItem Content="     |    " />
-            <StatusBarItem Content="{Binding InfoText, Mode=OneWay}" />
+            <StatusBarItem Name="InfoBar" Content="{Binding InfoText, Mode=OneWay}" />
         </StatusBar>
     </Grid>
 </Window>

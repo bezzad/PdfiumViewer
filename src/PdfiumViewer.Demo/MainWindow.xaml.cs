@@ -40,7 +40,7 @@ namespace PdfiumViewer.Demo
         public int Page
         {
             get => Renderer.PageNo + 1;
-            set => Renderer.PageNo = Math.Min(Math.Max(value - 1, 0), Renderer.PageCount - 1);
+            set => Renderer.GotoPage(Math.Min(Math.Max(value - 1, 0), Renderer.PageCount - 1));
         }
 
 
@@ -81,7 +81,7 @@ namespace PdfiumViewer.Demo
             try
             {
                 var pageStep = Renderer.PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode ? 2 : 1;
-                Dispatcher.Invoke(() => Renderer.PageNo = 0);
+                Dispatcher.Invoke(() => Renderer.GotoPage(0));
                 while (Renderer.PageNo < Renderer.PageCount - pageStep)
                 {
                     Dispatcher.Invoke(() => Renderer.NextPage());
@@ -301,7 +301,7 @@ namespace PdfiumViewer.Demo
                 SearchMatchesCount = SearchManager.MatchesCount;
                 // DisplayTextSpan(SearchMatches.Items[SearchMatchItemNo++].TextSpan);
             }
-            
+
             if (!SearchManager.FindNext(true))
                 MessageBox.Show(this, "Find reached the starting point of the search.");
         }
@@ -331,7 +331,7 @@ namespace PdfiumViewer.Demo
                 SearchManager.FindNext(false);
             }
         }
-        
+
         private void ToRtlClick(object sender, RoutedEventArgs e)
         {
             Renderer.IsRightToLeft = true;
@@ -340,6 +340,21 @@ namespace PdfiumViewer.Demo
         private void ToLtrClick(object sender, RoutedEventArgs e)
         {
             Renderer.IsRightToLeft = false;
+        }
+
+        private async void OnClosePdf(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                InfoBar.Foreground = System.Windows.Media.Brushes.Red;
+                Renderer.UnLoad();
+                await Task.Delay(5000);
+                InfoBar.Foreground = System.Windows.Media.Brushes.Black;
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception);
+            }
         }
     }
 }
