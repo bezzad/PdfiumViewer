@@ -14,6 +14,7 @@ PDF viewer based on Google's PDFium port to .Net Core.</Description>
     <PackageTags>pdfium pdf-viewer wpf-controls dotnet-core google-pdf-viewer chrome-pdf</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+    <PackageId>PdfiumViewer.WPF</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
