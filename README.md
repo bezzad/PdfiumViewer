@@ -5,14 +5,14 @@
 
 Apache 2.0 License.
 
-> Note: this is a .Net Core port of [PdfiumViewer](https://github.com/pvginkel/PdfiumViewer)
+> Note: this is a .Net Core WPF port of [PdfiumViewer](https://github.com/pvginkel/PdfiumViewer)
 
 
 [Download from NuGet](http://nuget.org/packages/PdfiumViewer.WPF).
 
-![PdfiumViewer.WPF](https://raw.githubusercontent.com/bezzad/PdfiumViewer/master/screenshot.png)
+[Download Portabl PdfiumViewer WPF Demo](https://drive.google.com/file/d/1Y-KmnIeV1JKZDK6igNk0E8-OqoeziDlw/view?usp=sharing)
 
-[Download Portabl PdfiumViewer Demo](https://drive.google.com/file/d/1Y-KmnIeV1JKZDK6igNk0E8-OqoeziDlw/view?usp=sharing)
+![PdfiumViewer.WPF](https://raw.githubusercontent.com/bezzad/PdfiumViewer/master/screenshot.png)
 
 ## Introduction
 
@@ -22,10 +22,9 @@ PdfiumViewer provides a number of components to work with PDF files:
 
 * PdfDocument is the base class used to render PDF documents;
 
-* PdfRenderer is a WinForms control that can render a PdfDocument;
+* PdfRenderer is a WPF control that can render a PdfDocument;
 
-* PdfiumViewer is a WinForms control that hosts a PdfRenderer control and
-  adds a toolbar to save the PDF file or print it.
+> Note: If you want to use that in WinForms, please use the main project from [PdfiumViewer WinForm](https://github.com/pvginkel/PdfiumViewer)
 
 ## Compatibility
 
@@ -44,23 +43,11 @@ Wiki page for more information on how to add these.
 
 The PdfiumViewer library primarily consists out of three components:
 
-* The `PdfViewer` control. This control provides a host for the `PdfRenderer`
-  control and has a default toolbar with limited functionality;
 * The `PdfRenderer` control. This control implements the raw PDF renderer.
   This control displays a PDF document, provides zooming and scrolling
   functionality and exposes methods to perform more advanced actions;
 * The `PdfDocument` class provides access to the PDF document and wraps
   the Pdfium library.
-
-The `PdfViewer` control should only be used when you have a very simple use
-case and where the buttons available on the toolbar provide enough functionality
-for you. This toolbar will not be extended with new buttons or with functionality
-to hide buttons. The reason for this is that the `PdfViewer` control is just
-meant to get you started. If you need more advanced functionality, you should
-create your own control with your own toolbar, e.g. by starting out with
-the `PdfViewer` control. Also, because people currently are already using the
-`PdfViewer` control, adding more functionality to this toolbar would be
-a breaking change.
 
 ## Building PDFium
 
@@ -81,8 +68,7 @@ libraries are located in the `PdfiumViewer-...` target directories.
 
 ## Bugs
 
-Bugs should be reported through github at
-[http://github.com/bezzad/PdfiumViewer/issues](http://github.com/bezzad/PdfiumViewer/issues).
+Bugs should be reported through github at [http://github.com/bezzad/PdfiumViewer/issues](http://github.com/bezzad/PdfiumViewer/issues).
 
 ## License
 
