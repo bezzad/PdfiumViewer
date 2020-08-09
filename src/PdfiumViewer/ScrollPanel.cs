@@ -110,7 +110,7 @@ namespace PdfiumViewer
                 // var pageSize = CalculatePageSize(page);
                 // var verticalOffset = page * (pageSize.Height + FrameSpace.Top + FrameSpace.Bottom);
                 // ScrollToVerticalOffset(verticalOffset);
-                Frames[page].BringIntoView();
+                Frames?[page].BringIntoView();
             }
         }
         protected void OnPageNoChanged()
@@ -230,7 +230,7 @@ namespace PdfiumViewer
         }
         protected void ReleaseFrames(int keepFrom, int keepTo)
         {
-            for (var f = 0; f < Frames.Length; f++)
+            for (var f = 0; f < Frames?.Length; f++)
             {
                 var frame = Frames[f];
                 if ((f < keepFrom || f > keepTo) && frame.Source != null)
@@ -350,7 +350,8 @@ namespace PdfiumViewer
         {
             base.OnScrollChanged(e);
             if (IsDocumentLoaded &&
-                PagesDisplayMode == PdfViewerPagesDisplayMode.ContinuousMode)
+                PagesDisplayMode == PdfViewerPagesDisplayMode.ContinuousMode && 
+                Frames != null)
             {
                 var startOffset = e.VerticalOffset;
                 var height = e.ViewportHeight;

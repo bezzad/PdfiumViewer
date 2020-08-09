@@ -3,10 +3,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWPF>true</UseWPF>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Authors>Behzad Khosravifar</Authors>
-    <Description>About
-PDF viewer based on Google's PDFium port to .Net Core.</Description>
+    <Description>PDF viewer based on Google's PDFium port to .Net Core.</Description>
     <Copyright>Copyright © 2019-2020 Behzad Khosravifar</Copyright>
     <PackageProjectUrl>https://github.com/bezzad/PdfiumViewer</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
@@ -16,7 +15,7 @@ PDF viewer based on Google's PDFium port to .Net Core.</Description>
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
     <PackageId>PdfiumViewer.WPF</PackageId>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageReleaseNotes>First nuget package for PDFiumViewer.WPF</PackageReleaseNotes>
+    <PackageReleaseNotes>Fixed null reference issue for frames array</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
