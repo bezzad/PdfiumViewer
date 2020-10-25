@@ -71,9 +71,6 @@ namespace PdfiumViewer
 
             Cursor = Cursors.Arrow;
             IsMouseDown = false;
-            var currentPoint = e.GetPosition(this);
-            // Determine the new amount to scroll.
-            _scrollTarget = GetScrollTarget(currentPoint);
             InertiaHandleMouseUp();
         }
 
