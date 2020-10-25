@@ -252,9 +252,8 @@ namespace PdfiumViewer
         {
             base.OnPreviewMouseWheel(e);
 
-            MouseWheelUpdateTime = Environment.TickCount64;
-            MouseWheelDelta = e.Delta;
-
+            SetMouseWheelDelta(e.Delta);
+            
             if (IsDocumentLoaded)
             {
                 if (MouseWheelMode == MouseWheelMode.Zoom)
@@ -450,7 +449,11 @@ namespace PdfiumViewer
                 }
             }
         }
-
+        protected void SetMouseWheelDelta(int delta)
+        {
+            MouseWheelUpdateTime = Environment.TickCount64;
+            MouseWheelDelta = delta;
+        }
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
