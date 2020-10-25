@@ -15,7 +15,7 @@ namespace PdfiumViewer
         private Point _scrollTarget;
         private int InertiaHandlerInterval { get; set; } = 20; // milliseconds
         private int InertiaMaxAnimationTime { get; set; } = 3000; // milliseconds
-
+        protected bool IsMouseDown { get; set; }
 
         #region Friction
 
@@ -33,22 +33,6 @@ namespace PdfiumViewer
 
         #endregion
 
-        #region IsMouseDown
-
-        /// <summary>
-        /// IsMouseDown Attached Dependency Property
-        /// </summary>
-        private static readonly DependencyProperty IsMouseDownProperty = DependencyProperty.RegisterAttached(nameof(IsMouseDown), typeof(bool), typeof(ScrollPanel), new FrameworkPropertyMetadata(false));
-
-        private bool IsMouseDown
-        {
-            get => (bool)GetValue(IsMouseDownProperty);
-            set => SetValue(IsMouseDownProperty, value);
-        }
-
-        #endregion
-
-        #region Mouse Events
 
         protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
         {
@@ -111,8 +95,6 @@ namespace PdfiumViewer
             return scrollTarget;
         }
 
-
-
         private void InertiaHandleMouseMove()
         {
             var currentPoint = Mouse.GetPosition(this);
@@ -135,7 +117,5 @@ namespace PdfiumViewer
                 await Task.Delay(InertiaHandlerInterval);
             }
         }
-
-        #endregion
     }
 }
