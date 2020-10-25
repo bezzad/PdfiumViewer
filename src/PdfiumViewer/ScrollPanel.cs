@@ -70,6 +70,8 @@ namespace PdfiumViewer
         protected Image[] Frames { get; set; }
         protected Size CurrentPageSize { get; set; }
         protected int ScrollWidth { get; set; }
+        protected int MouseWheelDelta { get; set; }
+        protected long MouseWheelUpdateTime { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
         public PdfDocument Document { get; set; }
@@ -250,6 +252,9 @@ namespace PdfiumViewer
         {
             base.OnPreviewMouseWheel(e);
 
+            MouseWheelUpdateTime = Environment.TickCount64;
+            MouseWheelDelta = e.Delta;
+
             if (IsDocumentLoaded)
             {
                 if (MouseWheelMode == MouseWheelMode.Zoom)
@@ -350,7 +355,7 @@ namespace PdfiumViewer
         {
             base.OnScrollChanged(e);
             if (IsDocumentLoaded &&
-                PagesDisplayMode == PdfViewerPagesDisplayMode.ContinuousMode && 
+                PagesDisplayMode == PdfViewerPagesDisplayMode.ContinuousMode &&
                 Frames != null)
             {
                 var startOffset = e.VerticalOffset;

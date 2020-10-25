@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWPF>true</UseWPF>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
     <Authors>Behzad Khosravifar</Authors>
     <Description>PDF viewer based on Google's PDFium port to .Net Core.</Description>
     <Copyright>Copyright © 2019-2020 Behzad Khosravifar</Copyright>
