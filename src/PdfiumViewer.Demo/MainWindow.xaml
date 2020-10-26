@@ -6,6 +6,7 @@
         xmlns:pdfiumViewer="clr-namespace:PdfiumViewer;assembly=PdfiumViewer"
         xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:converters="clr-namespace:PdfiumViewer.Demo.Converters"
+        xmlns:core="clr-namespace:PdfiumViewer.Core;assembly=PdfiumViewer"
         mc:Ignorable="d"
         Title="PDFium Viewer WPF Demo" Height="450" Width="1118" Background="LightGray">
     <Grid >
@@ -24,6 +25,45 @@
             <Button ToolTip="Render all pages" Click="RenderToMemory">
                 <Image Source="Resources/render_all_pages.png" />
             </Button>
+             <Button Name="BtnShowBookmarks" ToolTip="Show Bookmarks" Click="OnDisplayBookmarks">
+                <Image Source="Resources/show_bookmarks.png" />
+            </Button>
+            <Popup IsOpen="{Binding ShowBookmarks}" 
+                   Placement="Bottom"
+                   PlacementRectangle="0,20,0,20"
+                   ScrollViewer.VerticalScrollBarVisibility="Auto"
+                   PlacementTarget = "{Binding ElementName=BtnShowBookmarks}"
+                   PopupAnimation="Slide">
+
+                <Border Background="WhiteSmoke" Height="Auto" MaxHeight="600"
+                        HorizontalAlignment="Center" 
+                        BorderBrush="AntiqueWhite" 
+                        BorderThickness="2">
+                    <TreeView x:Name="TocTree" 
+                                      MaxHeight="500" 
+                                      Foreground="{DynamicResource Brushes.ThemeForeground}"
+                                      FlowDirection="{Binding IsRtl, Mode=OneWay}"
+                                      ItemsSource="{Binding Bookmarks, Mode=OneWay}"
+                                      HorizontalContentAlignment="Stretch"
+                                      HorizontalAlignment="Stretch">
+                                <TreeView.ItemTemplate>
+                                    <HierarchicalDataTemplate ItemsSource="{Binding Children, Mode=OneWay}" DataType="{x:Type core:PdfBookmarkCollection}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding Title, Mode=OneWay}" />
+                                            <TextBlock Grid.Column="1" Text="{Binding PageIndex, Mode=OneWay}" HorizontalAlignment="Right" Margin="10,0"/>
+                                        </Grid>
+                                    </HierarchicalDataTemplate>
+                                </TreeView.ItemTemplate>
+                                <b:Interaction.Behaviors>
+                                    <converters:BindSelectedItemBehavior SelectedItem="{Binding SelectedBookIndex, Mode=OneWayToSource}" />
+                                </b:Interaction.Behaviors>
+                            </TreeView>
+                </Border>
+            </Popup>
             <Button x:Name="BtnSearch" ToolTip="Search term" Click="OpenCloseSearch">
                 <Image Source="Resources/find.png" />
             </Button>
@@ -155,9 +195,6 @@
 
             <Button ToolTip="Transparent Page" Click="OnTransparent">
                 <Image Source="Resources/transparent.png" />
-            </Button>
-            <Button ToolTip="Show Bookmarks" Click="OnDisplayBookmarks">
-                <Image Source="Resources/show_bookmarks.png" />
             </Button>
             <Button ToolTip="Get Page Text" Click="OnGetText">
                 <Image Source="Resources/show_text.png" />

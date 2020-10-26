@@ -7,7 +7,7 @@ namespace PdfiumViewer
 {
     public partial class ScrollPanel
     {
-        private const double DefaultFriction = 0.94;
+        private const double DefaultFriction = 0.95;
         private Point ScrollStartPoint { get; set; }
         private Point ScrollStartOffset { get; set; }
         private Point PreviousPoint { get; set; }
@@ -22,7 +22,7 @@ namespace PdfiumViewer
         /// <summary>
         /// Friction Attached Dependency Property
         /// </summary>
-        public static readonly DependencyProperty FrictionProperty = 
+        public static readonly DependencyProperty FrictionProperty =
             DependencyProperty.RegisterAttached(nameof(Friction), typeof(double), typeof(ScrollPanel), new FrameworkPropertyMetadata(DefaultFriction));
 
         public double Friction
@@ -43,6 +43,7 @@ namespace PdfiumViewer
                 Cursor = Cursors.ScrollAll;
                 // Save starting point, used later when
                 // determining how much to scroll.
+                Velocity = new Vector();
                 ScrollStartPoint = e.GetPosition(this);
                 ScrollStartOffset = new Point(HorizontalOffset, VerticalOffset);
                 IsMouseDown = true;
@@ -103,7 +104,7 @@ namespace PdfiumViewer
         {
             for (var i = 0; i < InertiaMaxAnimationTime / InertiaHandlerInterval; i++)
             {
-                if (IsMouseDown || Velocity.Length <= 1 || Environment.TickCount64 - MouseWheelUpdateTime < InertiaHandlerInterval)
+                if (IsMouseDown || Velocity.Length <= 1 || Environment.TickCount64 - MouseWheelUpdateTime < InertiaHandlerInterval * 2)
                     break;
 
                 ScrollToHorizontalOffset(_scrollTarget.X);

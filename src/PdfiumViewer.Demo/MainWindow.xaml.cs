@@ -28,7 +28,10 @@ namespace PdfiumViewer.Demo
 
         public string InfoText { get; set; }
         public string SearchTerm { get; set; }
-
+        public PdfBookmarkCollection Bookmarks { get; set; }
+        public bool ShowBookmarks { get; set; }
+        public PdfBookmark SelectedBookIndex { get; set; }
+        
         public double ZoomPercent
         {
             get => Renderer.Zoom * 100;
@@ -41,6 +44,11 @@ namespace PdfiumViewer.Demo
         {
             get => Renderer.PageNo + 1;
             set => Renderer.GotoPage(Math.Min(Math.Max(value - 1, 0), Renderer.PageCount - 1));
+        }
+        public FlowDirection IsRtl
+        {
+            get => Renderer.IsRightToLeft ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+            set => Renderer.IsRightToLeft = value == FlowDirection.RightToLeft ? true : false;
         }
 
 
@@ -160,17 +168,20 @@ namespace PdfiumViewer.Demo
         private void OnInfo(object sender, RoutedEventArgs e)
         {
             var info = Renderer.GetInformation();
-            var sb = new StringBuilder();
-            sb.AppendLine($"Author: {info.Author}");
-            sb.AppendLine($"Creator: {info.Creator}");
-            sb.AppendLine($"Keywords: {info.Keywords}");
-            sb.AppendLine($"Producer: {info.Producer}");
-            sb.AppendLine($"Subject: {info.Subject}");
-            sb.AppendLine($"Title: {info.Title}");
-            sb.AppendLine($"Create Date: {info.CreationDate}");
-            sb.AppendLine($"Modified Date: {info.ModificationDate}");
+            if (info != null)
+            {
+                var sb = new StringBuilder();
+                sb.AppendLine($"Author: {info.Author}");
+                sb.AppendLine($"Creator: {info.Creator}");
+                sb.AppendLine($"Keywords: {info.Keywords}");
+                sb.AppendLine($"Producer: {info.Producer}");
+                sb.AppendLine($"Subject: {info.Subject}");
+                sb.AppendLine($"Title: {info.Title}");
+                sb.AppendLine($"Create Date: {info.CreationDate}");
+                sb.AppendLine($"Modified Date: {info.ModificationDate}");
 
-            MessageBox.Show(sb.ToString(), "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(sb.ToString(), "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
 
         private void OnGetText(object sender, RoutedEventArgs e)
@@ -178,13 +189,15 @@ namespace PdfiumViewer.Demo
             var txtViewer = new TextViewer();
             var page = Renderer.PageNo;
             txtViewer.Body = Renderer.GetPdfText(page);
-            txtViewer.Caption = $"Page {page + 1} contains {txtViewer.Body.Length} character(s):";
+            txtViewer.Caption = $"Page {page + 1} contains {txtViewer.Body?.Length} character(s):";
             txtViewer.ShowDialog();
         }
 
         private void OnDisplayBookmarks(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            Bookmarks = Renderer.Bookmarks;
+            if(Bookmarks?.Count > 0)
+                ShowBookmarks = !ShowBookmarks;
         }
 
         private void OnContinuousModeClick(object sender, RoutedEventArgs e)
@@ -335,11 +348,13 @@ namespace PdfiumViewer.Demo
         private void ToRtlClick(object sender, RoutedEventArgs e)
         {
             Renderer.IsRightToLeft = true;
+            OnPropertyChanged(nameof(IsRtl));
         }
 
         private void ToLtrClick(object sender, RoutedEventArgs e)
         {
             Renderer.IsRightToLeft = false;
+            OnPropertyChanged(nameof(IsRtl));
         }
 
         private async void OnClosePdf(object sender, RoutedEventArgs e)
@@ -355,6 +370,14 @@ namespace PdfiumViewer.Demo
             {
                 Console.WriteLine(exception);
             }
+        }
+        
+        /// <summary>
+        /// Call when SelectedBookIndex changed.
+        /// </summary>
+        private void OnSelectedBookIndexChanged()
+        {
+            Renderer.GotoPage(SelectedBookIndex.PageIndex);
         }
     }
 }
