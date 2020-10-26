@@ -59,17 +59,17 @@ namespace PdfiumViewer
 
         public PdfMatches Search(string text, bool matchCase, bool wholeWord)
         {
-            return Document.Search(text, matchCase, wholeWord);
+            return Document?.Search(text, matchCase, wholeWord);
         }
 
         public PdfMatches Search(string text, bool matchCase, bool wholeWord, int page)
         {
-            return Document.Search(text, matchCase, wholeWord, page);
+            return Document?.Search(text, matchCase, wholeWord, page);
         }
 
         public PdfMatches Search(string text, bool matchCase, bool wholeWord, int startPage, int endPage)
         {
-            return Document.Search(text, matchCase, wholeWord, startPage, endPage);
+            return Document?.Search(text, matchCase, wholeWord, startPage, endPage);
         }
 
         public PrintDocument CreatePrintDocument()
@@ -105,22 +105,22 @@ namespace PdfiumViewer
 
         public PdfInformation GetInformation()
         {
-            return Document.GetInformation();
+            return Document?.GetInformation();
         }
 
         public string GetPdfText(int page)
         {
-            return Document.GetPdfText(page);
+            return Document?.GetPdfText(page);
         }
 
         public string GetPdfText(PdfTextSpan textSpan)
         {
-            return Document.GetPdfText(textSpan);
+            return Document?.GetPdfText(textSpan);
         }
 
         public IList<PdfRectangle> GetTextBounds(PdfTextSpan textSpan)
         {
-            return Document.GetTextBounds(textSpan);
+            return Document?.GetTextBounds(textSpan);
         }
 
         public PointF PointToPdf(int page, Point point)
