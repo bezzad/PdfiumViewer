@@ -15,7 +15,7 @@
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
     <PackageId>PdfiumViewer.WPF</PackageId>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageReleaseNotes>Fixed kinetic scrolling on PDF</PackageReleaseNotes>
+    <PackageReleaseNotes>Added EnableKinetic scroll option</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
