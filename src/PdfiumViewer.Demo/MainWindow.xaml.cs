@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 
 namespace PdfiumViewer.Demo
@@ -21,41 +22,12 @@ namespace PdfiumViewer.Demo
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        private Process CurrentProcess { get; }
-        private CancellationTokenSource Cts { get; }
-        private System.Windows.Threading.DispatcherTimer MemoryChecker { get; }
-        private PdfSearchManager SearchManager { get; }
-
-        public string InfoText { get; set; }
-        public string SearchTerm { get; set; }
-        public PdfBookmarkCollection Bookmarks { get; set; }
-        public bool ShowBookmarks { get; set; }
-        public PdfBookmark SelectedBookIndex { get; set; }
-        
-        public double ZoomPercent
-        {
-            get => Renderer.Zoom * 100;
-            set => Renderer.SetZoom(value / 100);
-        }
-        public bool IsSearchOpen { get; set; }
-        public int SearchMatchItemNo { get; set; }
-        public int SearchMatchesCount { get; set; }
-        public int Page
-        {
-            get => Renderer.PageNo + 1;
-            set => Renderer.GotoPage(Math.Min(Math.Max(value - 1, 0), Renderer.PageCount - 1));
-        }
-        public FlowDirection IsRtl
-        {
-            get => Renderer.IsRightToLeft ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
-            set => Renderer.IsRightToLeft = value == FlowDirection.RightToLeft ? true : false;
-        }
-
-
         public MainWindow()
         {
             InitializeComponent();
 
+            var version = GetType().Assembly.GetName().Version.ToString(3);
+            Title = $"WPF PDFium Viewer Demo v{version}";
             CurrentProcess = Process.GetCurrentProcess();
             Cts = new CancellationTokenSource();
             DataContext = this;
@@ -76,6 +48,36 @@ namespace PdfiumViewer.Demo
             HighlightAllMatchesCheckBox.IsChecked = SearchManager.HighlightAllMatches;
         }
 
+
+        private Process CurrentProcess { get; }
+        private CancellationTokenSource Cts { get; }
+        private System.Windows.Threading.DispatcherTimer MemoryChecker { get; }
+        private PdfSearchManager SearchManager { get; }
+        public string InfoText { get; set; }
+        public string SearchTerm { get; set; }
+        public PdfBookmarkCollection Bookmarks { get; set; }
+        public bool ShowBookmarks { get; set; }
+        public PdfBookmark SelectedBookIndex { get; set; }
+        public double ZoomPercent
+        {
+            get => Renderer.Zoom * 100;
+            set => Renderer.SetZoom(value / 100);
+        }
+        public bool IsSearchOpen { get; set; }
+        public int SearchMatchItemNo { get; set; }
+        public int SearchMatchesCount { get; set; }
+        public int Page
+        {
+            get => Renderer.PageNo + 1;
+            set => Renderer.GotoPage(Math.Min(Math.Max(value - 1, 0), Renderer.PageCount - 1));
+        }
+        public FlowDirection IsRtl
+        {
+            get => Renderer.IsRightToLeft ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+            set => Renderer.IsRightToLeft = value == FlowDirection.RightToLeft ? true : false;
+        }
+        
+        
         private void OnMemoryChecker(object sender, EventArgs e)
         {
             CurrentProcess.Refresh();
@@ -126,7 +128,6 @@ namespace PdfiumViewer.Demo
             MemoryChecker?.Stop();
             Renderer?.Dispose();
         }
-
         private void OnPrevPageClick(object sender, RoutedEventArgs e)
         {
             Renderer.PreviousPage();
@@ -135,7 +136,6 @@ namespace PdfiumViewer.Demo
         {
             Renderer.NextPage();
         }
-
         private void OnFitWidth(object sender, RoutedEventArgs e)
         {
             Renderer.SetZoomMode(PdfViewerZoomMode.FitWidth);
@@ -144,27 +144,22 @@ namespace PdfiumViewer.Demo
         {
             Renderer.SetZoomMode(PdfViewerZoomMode.FitHeight);
         }
-
         private void OnZoomInClick(object sender, RoutedEventArgs e)
         {
             Renderer.ZoomIn();
         }
-
         private void OnZoomOutClick(object sender, RoutedEventArgs e)
         {
             Renderer.ZoomOut();
         }
-
         private void OnRotateLeftClick(object sender, RoutedEventArgs e)
         {
             Renderer.Counterclockwise();
         }
-
         private void OnRotateRightClick(object sender, RoutedEventArgs e)
         {
             Renderer.ClockwiseRotate();
         }
-
         private void OnInfo(object sender, RoutedEventArgs e)
         {
             var info = Renderer.GetInformation();
@@ -183,7 +178,6 @@ namespace PdfiumViewer.Demo
                 MessageBox.Show(sb.ToString(), "Information", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
-
         private void OnGetText(object sender, RoutedEventArgs e)
         {
             var txtViewer = new TextViewer();
@@ -192,29 +186,24 @@ namespace PdfiumViewer.Demo
             txtViewer.Caption = $"Page {page + 1} contains {txtViewer.Body?.Length} character(s):";
             txtViewer.ShowDialog();
         }
-
         private void OnDisplayBookmarks(object sender, RoutedEventArgs e)
         {
             Bookmarks = Renderer.Bookmarks;
             if(Bookmarks?.Count > 0)
                 ShowBookmarks = !ShowBookmarks;
         }
-
         private void OnContinuousModeClick(object sender, RoutedEventArgs e)
         {
             Renderer.PagesDisplayMode = PdfViewerPagesDisplayMode.ContinuousMode;
         }
-
         private void OnBookModeClick(object sender, RoutedEventArgs e)
         {
             Renderer.PagesDisplayMode = PdfViewerPagesDisplayMode.BookMode;
         }
-
         private void OnSinglePageModeClick(object sender, RoutedEventArgs e)
         {
             Renderer.PagesDisplayMode = PdfViewerPagesDisplayMode.SinglePageMode;
         }
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         [NotifyPropertyChangedInvocator]
@@ -222,8 +211,6 @@ namespace PdfiumViewer.Demo
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-
-
         private void OnTransparent(object sender, RoutedEventArgs e)
         {
             if ((Renderer.Flags & PdfRenderFlags.Transparent) != 0)
@@ -235,13 +222,11 @@ namespace PdfiumViewer.Demo
                 Renderer.Flags |= PdfRenderFlags.Transparent;
             }
         }
-
         private void OpenCloseSearch(object sender, RoutedEventArgs e)
         {
             IsSearchOpen = !IsSearchOpen;
             OnPropertyChanged(nameof(IsSearchOpen));
         }
-
         private void OnSearchTermKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
@@ -249,7 +234,6 @@ namespace PdfiumViewer.Demo
                 Search();
             }
         }
-
         private void SaveAsImages(object sender, RoutedEventArgs e)
         {
             // Create a "Save As" dialog for selecting a directory (HACK)
@@ -371,7 +355,12 @@ namespace PdfiumViewer.Demo
                 Console.WriteLine(exception);
             }
         }
-        
+        private void EnableHandTools(object sender, RoutedEventArgs e)
+        {
+            var toggle = (ToggleButton) sender;
+            Renderer.EnableKinetic = toggle.IsChecked == true;
+        }
+
         /// <summary>
         /// Call when SelectedBookIndex changed.
         /// </summary>

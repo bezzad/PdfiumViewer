@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWPF>true</UseWPF>
-    <Version>1.0.4</Version>
+    <Version>1.0.5</Version>
     <Authors>Behzad Khosravifar</Authors>
     <Description>PDF viewer based on Google's PDFium port to .Net Core.</Description>
     <Copyright>Copyright © 2019-2020 Behzad Khosravifar</Copyright>
@@ -15,7 +15,7 @@
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
     <PackageId>PdfiumViewer.WPF</PackageId>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageReleaseNotes>Added kinetic scrolling on PDF</PackageReleaseNotes>
+    <PackageReleaseNotes>Fixed kinetic scrolling on PDF</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
