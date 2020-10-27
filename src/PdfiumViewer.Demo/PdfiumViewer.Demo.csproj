@@ -5,6 +5,15 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>icon.ico</ApplicationIcon>
+    <Version>1.0.5</Version>
+    <PackageReleaseNotes>Added bookmarks list and kinetic scroll on PDF</PackageReleaseNotes>
+    <Description>Demo of PDF viewer based on Google's PDFium.</Description>
+    <Copyright>Copyright © 2019-2020 Behzad Khosravifar</Copyright>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/bezzad/PdfiumViewer</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/bezzad/PdfiumViewer.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>pdfium pdf-viewer wpf-controls dotnet-core google-pdf-viewer chrome-pdf</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,6 +22,7 @@
     <None Remove="Resources\find.png" />
     <None Remove="Resources\fit_height.png" />
     <None Remove="Resources\fit_width.png" />
+    <None Remove="Resources\hand_cursor.png" />
     <None Remove="Resources\info.png" />
     <None Remove="Resources\ltr.png" />
     <None Remove="Resources\next.png" />
@@ -30,6 +40,10 @@
     <None Remove="Resources\two_page.png" />
     <None Remove="Resources\zoom_in.png" />
     <None Remove="Resources\zoom_out.png" />
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -55,6 +69,7 @@
     <Resource Include="Resources\fit_width.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Resources\hand_cursor.png" />
     <Resource Include="Resources\info.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>

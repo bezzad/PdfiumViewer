@@ -23,7 +23,8 @@ namespace PdfiumViewer
         /// Friction Attached Dependency Property
         /// </summary>
         public static readonly DependencyProperty FrictionProperty =
-            DependencyProperty.RegisterAttached(nameof(Friction), typeof(double), typeof(ScrollPanel), new FrameworkPropertyMetadata(DefaultFriction));
+            DependencyProperty.RegisterAttached(nameof(Friction), typeof(double), typeof(ScrollPanel), 
+                new FrameworkPropertyMetadata(DefaultFriction));
 
         public double Friction
         {
@@ -33,12 +34,32 @@ namespace PdfiumViewer
 
         #endregion
 
+        #region EnableKinetic
+
+        /// <summary>
+        /// EnableKinetic Attached Dependency Property
+        /// </summary>
+        public static readonly DependencyProperty EnableKineticProperty =
+            DependencyProperty.RegisterAttached(nameof(EnableKinetic), typeof(bool), typeof(ScrollPanel), 
+                new FrameworkPropertyMetadata(false));
+
+        public bool EnableKinetic
+        {
+            get => (bool)GetValue(EnableKineticProperty);
+            set
+            {
+                SetValue(EnableKineticProperty, value);
+                Cursor = value ? Cursors.Hand : Cursors.Arrow;
+            }
+        }
+
+        #endregion
 
         protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
         {
             base.OnPreviewMouseDown(e);
 
-            if (IsMouseOver)
+            if (EnableKinetic && IsMouseOver)
             {
                 Cursor = Cursors.ScrollAll;
                 // Save starting point, used later when
@@ -54,7 +75,7 @@ namespace PdfiumViewer
         {
             base.OnPreviewMouseMove(e);
 
-            if (IsMouseDown)
+            if (EnableKinetic && IsMouseDown)
             {
                 var currentPoint = e.GetPosition(this);
                 // Determine the new amount to scroll.
@@ -70,9 +91,12 @@ namespace PdfiumViewer
         {
             base.OnPreviewMouseUp(e);
 
-            Cursor = Cursors.Arrow;
-            IsMouseDown = false;
-            InertiaHandleMouseUp();
+            if (EnableKinetic)
+            {
+                Cursor = Cursors.Hand;
+                IsMouseDown = false;
+                InertiaHandleMouseUp();
+            }
         }
 
         private Point GetScrollTarget(Point currentPoint)

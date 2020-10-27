@@ -8,7 +8,7 @@
         xmlns:converters="clr-namespace:PdfiumViewer.Demo.Converters"
         xmlns:core="clr-namespace:PdfiumViewer.Core;assembly=PdfiumViewer"
         mc:Ignorable="d"
-        Title="PDFium Viewer WPF Demo" Height="450" Width="1118" Background="LightGray">
+        Height="450" Width="1200" Background="LightGray">
     <Grid >
         <Grid.RowDefinitions>
             <RowDefinition Height="40"/>
@@ -67,6 +67,9 @@
             <Button x:Name="BtnSearch" ToolTip="Search term" Click="OpenCloseSearch">
                 <Image Source="Resources/find.png" />
             </Button>
+            <ToggleButton x:Name="BtnHand" ToolTip="Hand Tool" Click="EnableHandTools">
+                <Image Source="Resources/hand_cursor.png" />
+            </ToggleButton>
             <Popup IsOpen="{Binding IsSearchOpen}" 
                    Placement="Bottom"
                    PlacementRectangle="0,20,0,20"
