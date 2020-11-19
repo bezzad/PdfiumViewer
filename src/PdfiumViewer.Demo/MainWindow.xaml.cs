@@ -76,8 +76,8 @@ namespace PdfiumViewer.Demo
             get => Renderer.IsRightToLeft ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
             set => Renderer.IsRightToLeft = value == FlowDirection.RightToLeft ? true : false;
         }
-        
-        
+
+
         private void OnMemoryChecker(object sender, EventArgs e)
         {
             CurrentProcess.Refresh();
@@ -189,7 +189,7 @@ namespace PdfiumViewer.Demo
         private void OnDisplayBookmarks(object sender, RoutedEventArgs e)
         {
             Bookmarks = Renderer.Bookmarks;
-            if(Bookmarks?.Count > 0)
+            if (Bookmarks?.Count > 0)
                 ShowBookmarks = !ShowBookmarks;
         }
         private void OnContinuousModeClick(object sender, RoutedEventArgs e)
@@ -357,7 +357,7 @@ namespace PdfiumViewer.Demo
         }
         private void EnableHandTools(object sender, RoutedEventArgs e)
         {
-            var toggle = (ToggleButton) sender;
+            var toggle = (ToggleButton)sender;
             Renderer.EnableKinetic = toggle.IsChecked == true;
         }
 
@@ -366,7 +366,8 @@ namespace PdfiumViewer.Demo
         /// </summary>
         private void OnSelectedBookIndexChanged()
         {
-            Renderer.GotoPage(SelectedBookIndex.PageIndex);
+            if (SelectedBookIndex != null)
+                Renderer.GotoPage(SelectedBookIndex.PageIndex);
         }
     }
 }
