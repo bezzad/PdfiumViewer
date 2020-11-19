@@ -14,6 +14,10 @@ Apache 2.0 License.
 
 ![PdfiumViewer.WPF](https://raw.githubusercontent.com/bezzad/PdfiumViewer/master/screenshot.png)
 
+![PdfiumViewer.WPF](https://raw.githubusercontent.com/bezzad/PdfiumViewer/master/screenshot2.png)
+
+![PdfiumViewer.WPF](https://raw.githubusercontent.com/bezzad/PdfiumViewer/master/screenshot3.png)
+
 ## Introduction
 
 PdfiumViewer is a PDF viewer based on the PDFium project.
