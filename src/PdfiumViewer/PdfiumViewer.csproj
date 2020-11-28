@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFrameworks>netcoreapp3.1;net5.0-windows</TargetFrameworks>
     <UseWPF>true</UseWPF>
-    <Version>1.0.5</Version>
+    <Version>1.0.6</Version>
     <Authors>Behzad Khosravifar</Authors>
     <Description>PDF viewer based on Google's PDFium port to .Net Core.</Description>
     <Copyright>Copyright © 2019-2020 Behzad Khosravifar</Copyright>
@@ -15,7 +15,9 @@
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
     <PackageId>PdfiumViewer.WPF</PackageId>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageReleaseNotes>Added EnableKinetic scroll option</PackageReleaseNotes>
+    <PackageReleaseNotes>.Net 5 Support</PackageReleaseNotes>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <FileVersion>1.0.6.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
