@@ -551,10 +551,15 @@ namespace PdfiumViewer.Core
 
         public SizeF GetPageSize(int pageNo)
         {
-            if (_pageSizes[pageNo].IsEmpty)
-                _pageSizes[pageNo] = _file.GetPDFDocInfo(pageNo);
+            if (_pageSizes.Count > pageNo && pageNo >= 0)
+            {
+                if (_pageSizes[pageNo].IsEmpty)
+                    _pageSizes[pageNo] = _file.GetPDFDocInfo(pageNo);
 
-            return _pageSizes[pageNo];
+                return _pageSizes[pageNo];
+            }
+
+            return _pageSizes[0];
         }
 
         /// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
