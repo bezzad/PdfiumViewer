@@ -148,6 +148,7 @@ namespace PdfiumViewer
         {
             if (IsDocumentLoaded)
             {
+                PageNo = page;
                 CurrentPageSize = CalculatePageSize(page);
 
                 RenderPage(Frame1, page, CurrentPageSize.Width, CurrentPageSize.Height);
@@ -157,7 +158,6 @@ namespace PdfiumViewer
                     RenderPage(Frame2, page + 1, CurrentPageSize.Width, CurrentPageSize.Height);
                 }
 
-                PageNo = page;
                 ScrollToPage(PageNo);
             }
         }

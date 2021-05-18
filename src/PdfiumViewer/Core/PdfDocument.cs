@@ -114,18 +114,12 @@ namespace PdfiumViewer.Core
         /// <summary>
         /// Number of pages in the PDF document.
         /// </summary>
-        public int PageCount
-        {
-            get { return PageSizes.Count; }
-        }
+        public int PageCount => _file?.GetPageCount() ?? 0;
 
         /// <summary>
         /// Bookmarks stored in this PdfFile
         /// </summary>
-        public PdfBookmarkCollection Bookmarks
-        {
-            get { return _file.Bookmarks; }
-        }
+        public PdfBookmarkCollection Bookmarks => _file.Bookmarks;
 
         /// <summary>
         /// Size of each page in the PDF document.
@@ -135,11 +129,9 @@ namespace PdfiumViewer.Core
         private PdfDocument(Stream stream, string password)
         {
             _file = new PdfFile(stream, password);
-
-            _pageSizes = _file.GetPDFDocInfo();
-            if (_pageSizes == null)
-                throw new Win32Exception();
-
+            _pageSizes = new List<SizeF>(PageCount);
+            for (var i = 0; i < PageCount; i++)
+                _pageSizes.Add(new SizeF());
             PageSizes = new ReadOnlyCollection<SizeF>(_pageSizes);
         }
 
@@ -169,7 +161,7 @@ namespace PdfiumViewer.Core
         public void Render(int page, Graphics graphics, float dpiX, float dpiY, Rectangle bounds, PdfRenderFlags flags)
         {
             if (graphics == null)
-                throw new ArgumentNullException("graphics");
+                throw new ArgumentNullException(nameof(graphics));
             if (_disposed)
                 throw new ObjectDisposedException(GetType().Name);
 
@@ -555,6 +547,19 @@ namespace PdfiumViewer.Core
         public PdfInformation GetInformation()
         {
             return _file.GetInformation();
+        }
+
+        public SizeF GetPageSize(int pageNo)
+        {
+            if (_pageSizes.Count > pageNo && pageNo >= 0)
+            {
+                if (_pageSizes[pageNo].IsEmpty)
+                    _pageSizes[pageNo] = _file.GetPDFDocInfo(pageNo);
+
+                return _pageSizes[pageNo];
+            }
+
+            return _pageSizes[0];
         }
 
         /// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>

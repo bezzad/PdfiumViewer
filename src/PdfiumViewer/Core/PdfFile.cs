@@ -74,6 +74,10 @@ namespace PdfiumViewer.Core
             return true;
         }
 
+        public int GetPageCount()
+        {
+            return NativeMethods.FPDF_GetPageCount(_document);
+        }
         public PdfPageLinks GetPageLinks(int pageNumber, Size pageSize)
         {
             if (_disposed)

@@ -59,7 +59,7 @@ namespace PdfiumViewer
         public const double DefaultZoomMin = 0.1;
         public const double DefaultZoomMax = 5;
         public const double DefaultZoomFactor = 1.2;
-        protected bool IsDisposed = false;
+        protected bool IsDisposed;
         protected const int SmallScrollChange = 1;
         protected const int LargeScrollChange = 10;
         protected Process CurrentProcess { get; } = Process.GetCurrentProcess();
@@ -186,6 +186,7 @@ namespace PdfiumViewer
                 bitmapImage.StreamSource = memory;
                 bitmapImage.CacheOption = BitmapCacheOption.OnLoad; // not a mistake - see below
                 bitmapImage.EndInit();
+                image.Dispose();
             }
             // Why BitmapCacheOption.OnLoad?
             // It seems counter intuitive, but this flag has two effects:
@@ -199,6 +200,7 @@ namespace PdfiumViewer
                 frame.Height = height;
                 frame.Source = bitmapImage;
             });
+            GC.Collect();
             return bitmapImage;
         }
         protected Size CalculatePageSize(int? page = null)
@@ -210,7 +212,7 @@ namespace PdfiumViewer
 
             if (IsDocumentLoaded && containerWidth > 0 && containerHeight > 0)
             {
-                var currentPageSize = Document.PageSizes[page.Value];
+                var currentPageSize = Document.GetPageSize(page.Value);
                 if (isReverse)
                     currentPageSize = new SizeF(currentPageSize.Height, currentPageSize.Width);
 
