@@ -7,15 +7,17 @@ namespace PdfiumViewer
 {
     public partial class ScrollPanel
     {
-        private const double DefaultFriction = 0.95;
-        private Point ScrollStartPoint { get; set; }
-        private Point ScrollStartOffset { get; set; }
-        private Point PreviousPoint { get; set; }
-        private Vector Velocity { get; set; }
+        // Note: don't change the below fields to Property.
+        // Note: Because INotifyPropertyChanged event change the page number!
+        private const double DefaultFriction = 0.90;
+        private const int InertiaHandlerInterval = 20; // milliseconds
+        private const int InertiaMaxAnimationTime = 3000; // milliseconds
+        private bool _isMouseDown;
+        private Vector _velocity;
         private Point _scrollTarget;
-        private int InertiaHandlerInterval { get; set; } = 20; // milliseconds
-        private int InertiaMaxAnimationTime { get; set; } = 3000; // milliseconds
-        protected bool IsMouseDown { get; set; }
+        private Point _scrollStartPoint;
+        private Point _scrollStartOffset;
+        private Point _previousPoint;
 
         #region Friction
 
@@ -64,10 +66,10 @@ namespace PdfiumViewer
                 Cursor = Cursors.ScrollAll;
                 // Save starting point, used later when
                 // determining how much to scroll.
-                Velocity = new Vector();
-                ScrollStartPoint = e.GetPosition(this);
-                ScrollStartOffset = new Point(HorizontalOffset, VerticalOffset);
-                IsMouseDown = true;
+                _velocity = new Vector();
+                _scrollStartPoint = e.GetPosition(this);
+                _scrollStartOffset = new Point(HorizontalOffset, VerticalOffset);
+                _isMouseDown = true;
             }
         }
 
@@ -75,7 +77,7 @@ namespace PdfiumViewer
         {
             base.OnPreviewMouseMove(e);
 
-            if (EnableKinetic && IsMouseDown)
+            if (EnableKinetic && _isMouseDown)
             {
                 var currentPoint = e.GetPosition(this);
                 // Determine the new amount to scroll.
@@ -94,15 +96,15 @@ namespace PdfiumViewer
             if (EnableKinetic)
             {
                 Cursor = Cursors.Hand;
-                IsMouseDown = false;
+                _isMouseDown = false;
                 InertiaHandleMouseUp();
             }
         }
 
         private Point GetScrollTarget(Point currentPoint)
         {
-            var delta = new Point(ScrollStartPoint.X - currentPoint.X, ScrollStartPoint.Y - currentPoint.Y);
-            var scrollTarget = new Point(ScrollStartOffset.X + delta.X, ScrollStartOffset.Y + delta.Y);
+            var delta = new Point(_scrollStartPoint.X - currentPoint.X, _scrollStartPoint.Y - currentPoint.Y);
+            var scrollTarget = new Point(_scrollStartOffset.X + delta.X, _scrollStartOffset.Y + delta.Y);
 
             if (scrollTarget.Y < 0)
             {
@@ -120,22 +122,22 @@ namespace PdfiumViewer
         private void InertiaHandleMouseMove()
         {
             var currentPoint = Mouse.GetPosition(this);
-            Velocity = PreviousPoint - currentPoint;
-            PreviousPoint = currentPoint;
+            _velocity = _previousPoint - currentPoint;
+            _previousPoint = currentPoint;
         }
 
         private async void InertiaHandleMouseUp()
         {
             for (var i = 0; i < InertiaMaxAnimationTime / InertiaHandlerInterval; i++)
             {
-                if (IsMouseDown || Velocity.Length <= 1 || Environment.TickCount64 - MouseWheelUpdateTime < InertiaHandlerInterval * 2)
+                if (_isMouseDown || _velocity.Length <= 1 || Environment.TickCount64 - MouseWheelUpdateTime < InertiaHandlerInterval * 2)
                     break;
 
                 ScrollToHorizontalOffset(_scrollTarget.X);
                 ScrollToVerticalOffset(_scrollTarget.Y);
-                _scrollTarget.X += Velocity.X;
-                _scrollTarget.Y += Velocity.Y;
-                Velocity *= Friction;
+                _scrollTarget.X += _velocity.X;
+                _scrollTarget.Y += _velocity.Y;
+                _velocity *= Friction;
                 await Task.Delay(InertiaHandlerInterval);
             }
         }
