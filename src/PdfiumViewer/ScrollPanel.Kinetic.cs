@@ -93,7 +93,7 @@ namespace PdfiumViewer
         {
             base.OnPreviewMouseUp(e);
 
-            if (EnableKinetic)
+            if (EnableKinetic && _isMouseDown)
             {
                 Cursor = Cursors.Hand;
                 _isMouseDown = false;

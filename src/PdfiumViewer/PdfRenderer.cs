@@ -42,13 +42,13 @@ namespace PdfiumViewer
             OnPagesDisplayModeChanged();
             GotoPage(0);
         }
-        public void OpenPdf(Stream stream, bool isRightToLeft = false)
+        public void OpenPdf(Stream stream, bool isRightToLeft = false, int pageNumber = 0)
         {
             UnLoad();
             IsRightToLeft = isRightToLeft;
             Document = PdfDocument.Load(stream);
             OnPagesDisplayModeChanged();
-            GotoPage(0);
+            GotoPage(pageNumber);
         }
         public void OpenPdf(Stream stream, string password, bool isRightToLeft = false)
         {
@@ -259,7 +259,7 @@ namespace PdfiumViewer
             if (disposing)
             {
                 base.Dispose(true);
-                UnLoad();
+                Dispatcher.Invoke(UnLoad);
                 GC.SuppressFinalize(this);
                 GC.Collect();
             }
