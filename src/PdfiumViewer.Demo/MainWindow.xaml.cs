@@ -102,7 +102,6 @@ namespace PdfiumViewer.Demo
             {
                 Cts.Cancel();
                 Debug.Fail(ex.Message);
-                MessageBox.Show(this, ex.Message, "Error!");
             }
         }
 
@@ -116,9 +115,7 @@ namespace PdfiumViewer.Demo
 
             if (dialog.ShowDialog() == true)
             {
-                var bytes = File.ReadAllBytes(dialog.FileName);
-                var mem = new MemoryStream(bytes);
-                Renderer.OpenPdf(mem);
+                Renderer.OpenPdf(new FileStream(dialog.FileName, FileMode.Open, FileAccess.Read, FileShare.Read));
             }
         }
         protected override void OnClosed(EventArgs e)
