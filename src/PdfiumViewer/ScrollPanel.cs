@@ -42,10 +42,10 @@ namespace PdfiumViewer
 
             ZoomMode = PdfViewerZoomMode.FitHeight;
             Rotate = PdfRotation.Rotate0;
-            Flags = PdfRenderFlags.None;
+            Flags = PdfRenderFlags.CorrectFromDpi;
             PagesDisplayMode = PdfViewerPagesDisplayMode.SinglePageMode;
             MouseWheelMode = MouseWheelMode.PanAndZoom;
-            Dpi = 96;
+            Dpi = (int)VisualTreeHelper.GetDpi(this).PixelsPerInchX;
             ScrollWidth = 50;
             Zoom = 1;
             ZoomMin = DefaultZoomMin;
