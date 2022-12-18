@@ -131,7 +131,7 @@
             <GridSplitter Background="Gray" Width="1" Margin="5,0"/>
 
             <TextBlock Text="DPI:" VerticalAlignment="Center"/>
-            <TextBox x:Name="TxtDpi" Width="50" Text="{Binding ElementName=Renderer, Path=Dpi, UpdateSourceTrigger=PropertyChanged}">
+            <TextBox x:Name="TxtDpi" Width="50" Text="{Binding ElementName=Renderer, Path=Dpi, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource StringToIntConverter}}">
                 <b:Interaction.Behaviors>
                     <converters:AllowableCharactersTextBoxBehavior RegularExpression="^[0-9.\-]+$" MaxLength="6" />
                 </b:Interaction.Behaviors>
@@ -144,7 +144,7 @@
             <Button ToolTip="Next Page" Click="OnNextPageClick">
                 <Image Source="Resources/next.png" />
             </Button>
-            <TextBox x:Name="TxtPageNo" Width="50" Text="{Binding Page, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" Background="Bisque" >
+            <TextBox x:Name="TxtPageNo" Width="50" Text="{Binding Page, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource StringToIntConverter}}" TextAlignment="Center" Background="Bisque" >
                 <b:Interaction.Behaviors>
                     <converters:AllowableCharactersTextBoxBehavior RegularExpression="^[0-9.\-]+$" MaxLength="7" />
                 </b:Interaction.Behaviors>

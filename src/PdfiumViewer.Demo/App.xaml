@@ -8,5 +8,6 @@
 
         <converters:IconToImageSourceConverter x:Key="IconToImageSourceConverter" />
         <converters:MathConverter x:Key="MathConverter" />
+        <converters:StringToIntConverter x:Key="StringToIntConverter" />
     </Application.Resources>
 </Application>
