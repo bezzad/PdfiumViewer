@@ -175,7 +175,7 @@ namespace PdfiumViewer
         protected BitmapImage RenderPage(Image frame, int page, int width, int height)
         {
             if (frame == null) return null;
-            var image = Document.Render(page, width, height, Dpi, Dpi, Rotate, Flags);
+            var image = Document.Render(page, (int)(width * 1.2f), (int)(height * 1.2f), Dpi, Dpi, Rotate, Flags);
             BitmapImage bitmapImage;
             using (var memory = new MemoryStream())
             {
