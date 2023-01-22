@@ -68,7 +68,7 @@ namespace PdfiumViewer
         protected Image Frame1 => Frames?.FirstOrDefault();
         protected Image Frame2 => Frames?.Length > 1 ? Frames[1] : null;
         protected Image[] Frames { get; set; }
-        protected Size CurrentPageSize { get; set; }
+        public Size CurrentPageSize { get; set; }
         protected int ScrollWidth { get; set; }
         protected int MouseWheelDelta { get; set; }
         protected long MouseWheelUpdateTime { get; set; }

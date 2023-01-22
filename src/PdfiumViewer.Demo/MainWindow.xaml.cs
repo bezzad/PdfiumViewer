@@ -6,14 +6,17 @@ using PdfiumViewer.Enums;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace PdfiumViewer.Demo
 {
@@ -46,6 +49,8 @@ namespace PdfiumViewer.Demo
             MatchCaseCheckBox.IsChecked = SearchManager.MatchCase;
             WholeWordOnlyCheckBox.IsChecked = SearchManager.MatchWholeWord;
             HighlightAllMatchesCheckBox.IsChecked = SearchManager.HighlightAllMatches;
+            Rendererw.PagesDisplayMode = PdfViewerPagesDisplayMode.ContinuousMode;
+            teee = false;
         }
 
 
@@ -76,8 +81,6 @@ namespace PdfiumViewer.Demo
             get => Renderer.IsRightToLeft ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
             set => Renderer.IsRightToLeft = value == FlowDirection.RightToLeft ? true : false;
         }
-
-
         private void OnMemoryChecker(object sender, EventArgs e)
         {
             CurrentProcess.Refresh();
@@ -104,7 +107,20 @@ namespace PdfiumViewer.Demo
                 Debug.Fail(ex.Message);
             }
         }
-
+        public bool teee;
+        private void OpenThumbnail(object sender, RoutedEventArgs e)
+        {
+            if(teee)
+            {
+                Rendererw.Visibility = Visibility.Hidden;
+                teee = false;
+            }
+            else
+            {
+                Rendererw.Visibility = Visibility.Visible;
+                teee = true;
+            }
+        }
         private void OpenPdf(object sender, RoutedEventArgs e)
         {
             var dialog = new OpenFileDialog
@@ -116,6 +132,10 @@ namespace PdfiumViewer.Demo
             if (dialog.ShowDialog() == true)
             {
                 Renderer.OpenPdf(new FileStream(dialog.FileName, FileMode.Open, FileAccess.Read, FileShare.Read));
+                Rendererw.OpenPdf(new FileStream(dialog.FileName, FileMode.Open, FileAccess.Read, FileShare.Read));
+                
+                Rendererw.SetZoom(0.16);
+                VerticalOffset = 0;
             }
         }
         protected override void OnClosed(EventArgs e)
@@ -267,7 +287,10 @@ namespace PdfiumViewer.Demo
                 {
                     var size = Renderer.Document.PageSizes[i];
                     var image = Renderer.Document.Render(i, (int)size.Width * 5, (int)size.Height * 5, 300, 300, false);
+                    var imagew = Rendererw.Document.Render(i, 150, 200, 60, 60, false);
+                    
                     image.Save(Path.Combine(path, $"img{i}.png"));
+                    imagew.Save(Path.Combine(path, $"img{i}.png"));
                 }
             }
             catch (Exception ex)
@@ -365,6 +388,22 @@ namespace PdfiumViewer.Demo
         {
             if (SelectedBookIndex != null)
                 Renderer.GotoPage(SelectedBookIndex.PageIndex);
+        }
+
+        private void Rendererw_MouseClick(object sender, EventArgs e)
+        {
+            var u = e.GetType();
+            var wu = Rendererw.ScrollableHeight;
+            var i = Mouse.GetPosition(Application.Current.MainWindow);
+            int index = (int)(((int)VerticalOffset + i.Y - 50) / (Rendererw.CurrentPageSize.Height + 10));
+            Renderer.GotoPage(index);
+        }
+        private double VerticalOffset;
+        private void Rendererw_ScrollChanged(object sender, System.Windows.Controls.ScrollChangedEventArgs e)
+        {
+            VerticalOffset = + e.VerticalOffset;
+            if(VerticalOffset < 0)
+                VerticalOffset = 0;
         }
     }
 }

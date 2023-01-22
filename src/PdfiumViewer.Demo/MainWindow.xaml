@@ -15,7 +15,14 @@
             <RowDefinition />
             <RowDefinition Height="30" />
         </Grid.RowDefinitions>
-        <ToolBar Grid.Row="0" Background="WhiteSmoke">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <ToolBar Grid.Row="0" Background="WhiteSmoke" Grid.ColumnSpan="2">
+            <Button ToolTip="open thumbnail" Click="OpenThumbnail">
+                <Image Source="Resources/menu_rounded.png" />
+            </Button>
             <Button ToolTip="Open Pdf" Click="OpenPdf">
                 <Image Source="Resources/open_pdf.png" />
             </Button>
@@ -210,9 +217,10 @@
             </Button>
         </ToolBar>
 
-        <pdfiumViewer:PdfRenderer Grid.Row="1" Grid.Column="0" Name="Renderer" Padding="10"/>
+        <pdfiumViewer:PdfRenderer Grid.Row="1" Grid.Column="1" Name="Renderer" Padding="10"/>
+        <pdfiumViewer:PdfRenderer Width="150" Visibility="Hidden"  Grid.Row="1" Grid.Column="0" Name="Rendererw" Padding="10" Background="AliceBlue" MouseClick="Rendererw_MouseClick"   ScrollChanged="Rendererw_ScrollChanged" />
 
-        <StatusBar Grid.Row="2" Grid.Column="0">
+        <StatusBar Grid.Row="2" Grid.ColumnSpan="2">
             <StatusBarItem Content="Page:" />
             <StatusBarItem Content="{Binding Page, Mode=OneWay}" />
             <StatusBarItem Content="     |    " />
