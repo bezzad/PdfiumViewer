@@ -21,7 +21,7 @@
         </Grid.ColumnDefinitions>
         <ToolBar Grid.Row="0" Background="WhiteSmoke" Grid.ColumnSpan="2">
             <Button ToolTip="open thumbnail" Click="OpenThumbnail">
-                <Image Source="Resources/menu_rounded.png" />
+                <Image Source="Resources/open_pdf.png" />
             </Button>
             <Button ToolTip="Open Pdf" Click="OpenPdf">
                 <Image Source="Resources/open_pdf.png" />

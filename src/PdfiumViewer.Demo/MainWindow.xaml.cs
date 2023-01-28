@@ -50,7 +50,7 @@ namespace PdfiumViewer.Demo
             WholeWordOnlyCheckBox.IsChecked = SearchManager.MatchWholeWord;
             HighlightAllMatchesCheckBox.IsChecked = SearchManager.HighlightAllMatches;
             Rendererw.PagesDisplayMode = PdfViewerPagesDisplayMode.ContinuousMode;
-            teee = false;
+            Rendererw.Visibility = Visibility.Hidden;
         }
 
 
@@ -107,19 +107,12 @@ namespace PdfiumViewer.Demo
                 Debug.Fail(ex.Message);
             }
         }
-        public bool teee;
         private void OpenThumbnail(object sender, RoutedEventArgs e)
         {
-            if(teee)
-            {
+            if (Rendererw.Visibility == Visibility.Visible)
                 Rendererw.Visibility = Visibility.Hidden;
-                teee = false;
-            }
             else
-            {
-                Rendererw.Visibility = Visibility.Visible;
-                teee = true;
-            }
+                Rendererw.Visibility = Visibility;
         }
         private void OpenPdf(object sender, RoutedEventArgs e)
         {
@@ -392,8 +385,6 @@ namespace PdfiumViewer.Demo
 
         private void Rendererw_MouseClick(object sender, EventArgs e)
         {
-            var u = e.GetType();
-            var wu = Rendererw.ScrollableHeight;
             var i = Mouse.GetPosition(Application.Current.MainWindow);
             int index = (int)(((int)VerticalOffset + i.Y - 50) / (Rendererw.CurrentPageSize.Height + 10));
             Renderer.GotoPage(index);
