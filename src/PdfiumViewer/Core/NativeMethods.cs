@@ -119,8 +119,6 @@ namespace PdfiumViewer.Core
         [DllImport("user32.dll")]
         public static extern int ScrollWindowEx(IntPtr hWnd, int dx, int dy, IntPtr prcScroll, IntPtr prcClip, IntPtr hrgnUpdate, IntPtr prcUpdate, uint flags);
 
-        [SecurityPermission(SecurityAction.InheritanceDemand, UnmanagedCode = true)]
-        [SecurityPermission(SecurityAction.Demand, UnmanagedCode = true)]
         public class MemoryMappedHandle : SafeHandleZeroOrMinusOneIsInvalid
         {
             public MemoryMappedHandle()
@@ -128,7 +126,6 @@ namespace PdfiumViewer.Core
             {
             }
 
-            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
             protected override bool ReleaseHandle()
             {
                 return CloseHandle(handle);
