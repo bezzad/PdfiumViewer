@@ -16,19 +16,19 @@ namespace PdfiumViewer.Core
         // threads, even when there are multiple AppDomain's in play.
         private static readonly string LockString = string.Intern("e362349b-001d-4cb2-bf55-a71606a3e36f");
 
-        public static void FPDF_AddRef()
+        public static void FPDF_InitLibrary()
         {
             lock (LockString)
             {
-                Imports.FPDF_AddRef();
+                Imports.FPDF_InitLibrary();
             }
         }
 
-        public static void FPDF_Release()
+        public static void FPDF_DestroyLibrary()
         {
             lock (LockString)
             {
-                Imports.FPDF_Release();
+                Imports.FPDF_DestroyLibrary();
             }
         }
 
@@ -589,11 +589,22 @@ namespace PdfiumViewer.Core
 
         private static class Imports
         {
-            [DllImport("pdfium.dll")]
-            public static extern void FPDF_AddRef();
+            // LibraryImport is not supported by Blazor WebAssembly
+#if NET7_0_OR_GREATER && FALSE
+            [LibraryImport("pdfium")]
+            [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+            public static partial void FPDF_InitLibrary();
 
-            [DllImport("pdfium.dll")]
-            public static extern void FPDF_Release();
+            [LibraryImport("pdfium")]
+            [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+            public static partial void FPDF_DestroyLibrary();
+#else
+            [DllImport("pdfium", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void FPDF_InitLibrary();
+
+            [DllImport("pdfium", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void FPDF_DestroyLibrary();
+#endif
 
             [DllImport("pdfium.dll", CharSet = CharSet.Ansi)]
             public static extern IntPtr FPDF_LoadCustomDocument([MarshalAs(UnmanagedType.LPStruct)] FPDF_FILEACCESS access, string password);
