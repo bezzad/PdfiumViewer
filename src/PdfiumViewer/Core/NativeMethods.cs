@@ -67,7 +67,14 @@ namespace PdfiumViewer.Core
             if (path == null)
                 return false;
 
-            path = Path.Combine(path, IntPtr.Size == 4 ? "x86" : "x64");
+            if(IntPtr.Size == 4)
+            {
+                path = Path.Combine(path, "runtimes", "win-x86","native");
+            }
+            else
+            {
+                path = Path.Combine(path, "runtimes", "win-x64", "native");
+            }
             path = Path.Combine(path, "Pdfium.dll");
 
             return File.Exists(path) && LoadLibrary(path) != IntPtr.Zero;
@@ -119,8 +126,6 @@ namespace PdfiumViewer.Core
         [DllImport("user32.dll")]
         public static extern int ScrollWindowEx(IntPtr hWnd, int dx, int dy, IntPtr prcScroll, IntPtr prcClip, IntPtr hrgnUpdate, IntPtr prcUpdate, uint flags);
 
-        [SecurityPermission(SecurityAction.InheritanceDemand, UnmanagedCode = true)]
-        [SecurityPermission(SecurityAction.Demand, UnmanagedCode = true)]
         public class MemoryMappedHandle : SafeHandleZeroOrMinusOneIsInvalid
         {
             public MemoryMappedHandle()
@@ -128,7 +133,6 @@ namespace PdfiumViewer.Core
             {
             }
 
-            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
             protected override bool ReleaseHandle()
             {
                 return CloseHandle(handle);

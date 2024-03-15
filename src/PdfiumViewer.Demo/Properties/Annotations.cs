@@ -122,6 +122,9 @@ namespace PdfiumViewer.Demo.Annotations
     AttributeTargets.Property | AttributeTargets.Delegate)]
   public sealed class StringFormatMethodAttribute : Attribute
   {
+    /// <summary>
+    /// Set the format string of an annotated method.
+    /// </summary>
     /// <param name="formatParameterName">
     /// Specifies which parameter of an annotated method should be treated as the format string
     /// </param>
