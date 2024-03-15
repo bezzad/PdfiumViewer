@@ -1,4 +1,5 @@
-﻿using PdfiumViewer.Core;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using PdfiumViewer.Core;
 using PdfiumViewer.Enums;
 using System;
 using System.Collections.Generic;
@@ -19,7 +20,8 @@ using Size = System.Drawing.Size;
 namespace PdfiumViewer
 {
     // ScrollPanel.Properties
-    public partial class ScrollPanel : ScrollViewer, IPdfDocument, INotifyPropertyChanged
+    [ObservableObject]
+    public partial class ScrollPanel : ScrollViewer, IPdfDocument
     {
         public ScrollPanel()
         {
@@ -73,15 +75,23 @@ namespace PdfiumViewer
         protected int MouseWheelDelta { get; set; }
         protected long MouseWheelUpdateTime { get; set; }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        public PdfDocument Document { get; set; }
-        public int PageNo { get; protected set; }
-        public int Dpi { get; set; }
-        public PdfViewerZoomMode ZoomMode { get; protected set; }
-        public PdfRenderFlags Flags { get; set; }
-        public PdfRotation Rotate { get; set; }
-        public PdfViewerPagesDisplayMode PagesDisplayMode { get; set; }
-        public MouseWheelMode MouseWheelMode { get; set; }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(PageCount))]
+        private PdfDocument document;
+        [ObservableProperty]
+        private int pageNo;
+        [ObservableProperty]
+        private int dpi;
+        [ObservableProperty]
+        private PdfViewerZoomMode zoomMode;
+        [ObservableProperty]
+        private PdfRenderFlags flags;
+        [ObservableProperty]
+        private PdfRotation rotate;
+        [ObservableProperty]
+        private PdfViewerPagesDisplayMode pagesDisplayMode;
+        [ObservableProperty]
+        private MouseWheelMode mouseWheelMode;
         public bool IsRightToLeft
         {
             get => Panel.FlowDirection == FlowDirection.RightToLeft;
@@ -93,11 +103,14 @@ namespace PdfiumViewer
         /// Gets or sets the current zoom level.
         /// </summary>
         [Browsable(false)]
-        [DefaultValue(1.0)]
-        public double Zoom { get; set; }
-        [DefaultValue(DefaultZoomMin)] public double ZoomMin { get; set; }
-        [DefaultValue(DefaultZoomMax)] public double ZoomMax { get; set; }
-        [DefaultValue(DefaultZoomFactor)] public double ZoomFactor { get; set; }
+        [ObservableProperty]
+        private double zoom = 1.0;
+        [ObservableProperty]
+        private double zoomMin = DefaultZoomMin;
+        [ObservableProperty]
+        private double zoomMax = DefaultZoomMax;
+        [ObservableProperty]
+        private double zoomFactor = DefaultZoomFactor;
 
         public PdfBookmarkCollection Bookmarks => Document?.Bookmarks;
         public IList<SizeF> PageSizes => Document?.PageSizes;
@@ -115,14 +128,58 @@ namespace PdfiumViewer
                 Frames?[page].BringIntoView();
             }
         }
-        protected void OnPageNoChanged()
+
+        partial void OnPageNoChanged(int value)
         {
             PageChanged?.Invoke(this, PageNo);
         }
-        protected void OnDpiChanged()
+
+        partial void OnDpiChanged(int value)
         {
             GotoPage(PageNo);
         }
+
+        partial void OnPagesDisplayModeChanged(PdfViewerPagesDisplayMode value)
+        {
+            if (IsDocumentLoaded)
+            {
+                Panel.Children.Clear();
+                Frames = null;
+
+                if (PagesDisplayMode == PdfViewerPagesDisplayMode.SinglePageMode)
+                {
+                    Frames = new Image[1];
+                    Panel.Orientation = Orientation.Horizontal;
+                }
+                else if (PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode)
+                {
+                    Frames = new Image[2];
+                    Panel.Orientation = Orientation.Horizontal;
+                }
+                else if (PagesDisplayMode == PdfViewerPagesDisplayMode.ContinuousMode)
+                {
+                    // frames created at scrolling
+                    Frames = new Image[Document.PageCount];
+                    Panel.Orientation = Orientation.Vertical;
+                }
+
+                for (var i = 0; i < Frames.Length; i++)
+                {
+                    Frames[i] ??= new Image { Margin = FrameSpace };
+
+                    var pageSize = CalculatePageSize(i);
+                    Frames[i].Width = pageSize.Width;
+                    Frames[i].Height = pageSize.Height;
+
+                    Panel.Children.Add(Frames[i]);
+                }
+
+                GC.Collect();
+                GotoPage(PageNo);
+            }
+        }
+        
+        //TODO: Figure out how to remove this.
         protected void OnPagesDisplayModeChanged()
         {
             if (IsDocumentLoaded)
@@ -168,7 +225,8 @@ namespace PdfiumViewer
             base.OnMouseLeftButtonDown(e);
             MouseClick?.Invoke(this, EventArgs.Empty);
         }
-        protected void OnFlagsChanged()
+
+        partial void OnFlagsChanged(PdfRenderFlags value)
         {
             GotoPage(PageNo);
         }
@@ -255,7 +313,7 @@ namespace PdfiumViewer
             base.OnPreviewMouseWheel(e);
 
             SetMouseWheelDelta(e.Delta);
-            
+
             if (IsDocumentLoaded)
             {
                 if (MouseWheelMode == MouseWheelMode.Zoom)
