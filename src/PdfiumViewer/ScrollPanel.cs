@@ -12,6 +12,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Effects;
 using System.Windows.Media.Imaging;
 using Image = System.Windows.Controls.Image;
@@ -44,10 +45,10 @@ namespace PdfiumViewer
 
             ZoomMode = PdfViewerZoomMode.FitHeight;
             Rotate = PdfRotation.Rotate0;
-            Flags = PdfRenderFlags.None;
+            Flags = PdfRenderFlags.CorrectFromDpi;
             PagesDisplayMode = PdfViewerPagesDisplayMode.SinglePageMode;
             MouseWheelMode = MouseWheelMode.PanAndZoom;
-            Dpi = 96;
+            Dpi = (int)VisualTreeHelper.GetDpi(this).PixelsPerInchX;
             ScrollWidth = 50;
             Zoom = 1;
             ZoomMin = DefaultZoomMin;
