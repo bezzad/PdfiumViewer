@@ -45,6 +45,7 @@ namespace PdfiumViewer
             Flags = PdfRenderFlags.None;
             PagesDisplayMode = PdfViewerPagesDisplayMode.SinglePageMode;
             MouseWheelMode = MouseWheelMode.PanAndZoom;
+            ChangePageOnScroll = ChangePageOnScroll.Enabled;
             Dpi = 96;
             ScrollWidth = 50;
             Zoom = 1;
@@ -82,6 +83,7 @@ namespace PdfiumViewer
         public PdfRotation Rotate { get; set; }
         public PdfViewerPagesDisplayMode PagesDisplayMode { get; set; }
         public MouseWheelMode MouseWheelMode { get; set; }
+        public ChangePageOnScroll ChangePageOnScroll { get; set; }
         public bool IsRightToLeft
         {
             get => Panel.FlowDirection == FlowDirection.RightToLeft;
@@ -266,7 +268,7 @@ namespace PdfiumViewer
                     else
                         ZoomOut();
                 }
-                else if (PagesDisplayMode != PdfViewerPagesDisplayMode.ContinuousMode)
+                else if (PagesDisplayMode != PdfViewerPagesDisplayMode.ContinuousMode && ChangePageOnScroll == ChangePageOnScroll.Enabled)
                 {
                     var pageStep = PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode ? 2 : 1;
 
