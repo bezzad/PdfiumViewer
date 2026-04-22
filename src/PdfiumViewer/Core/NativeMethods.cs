@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Drawing;
+using System.Windows;
 using System.IO;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
@@ -185,17 +185,17 @@ namespace PdfiumViewer.Core
             public int right;
             public int bottom;
 
-            public RECT(Rectangle r)
+            public RECT(Rect r)
             {
-                left = r.Left;
-                top = r.Top;
-                right = r.Right;
-                bottom = r.Bottom;
+                left = (int)r.Left;
+                top = (int)r.Top;
+                right = (int)r.Right;
+                bottom = (int)r.Bottom;
             }
 
-            public Rectangle ToRectangle()
+            public Rect ToRectangle()
             {
-                return new Rectangle(left, top, right - left, bottom - top);
+                return new Rect(left, top, right - left, bottom - top);
             }
         }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
+using System.Linq;
+using System.Windows;
 using System.Windows.Media;
 using PdfiumViewer.Drawing;
 using Color = System.Windows.Media.Color;
@@ -118,6 +119,8 @@ namespace PdfiumViewer.Core
             _offset = -1;
 
             UpdateHighlights();
+            if (_matches?.Items.Count > 0)
+                Renderer.GotoPage(_matches.Items.First().Page);
 
             return _matches != null && _matches.Items.Count > 0;
         }
@@ -230,18 +233,17 @@ namespace PdfiumViewer.Core
         {
             foreach (var pdfBounds in _bounds[index])
             {
-                var bounds = new RectangleF(
-                    pdfBounds.Bounds.Left - 1,
-                    pdfBounds.Bounds.Top + 1,
-                    pdfBounds.Bounds.Width + 2,
-                    pdfBounds.Bounds.Height - 2
-                );
+                var bounds = new[] 
+                {
+                    new Point(pdfBounds.Bounds[0].X - 1, pdfBounds.Bounds[0].Y + 1),
+                    new Point(pdfBounds.Bounds[1].X + 2, pdfBounds.Bounds[1].Y - 2),
+                };
 
                 var marker = new PdfMarker(
                     pdfBounds.Page,
                     bounds,
-                    current ? CurrentMatchColor : MatchColor,
-                    current ? CurrentMatchBorderColor : MatchBorderColor,
+                    new SolidColorBrush(current ? CurrentMatchColor : MatchColor),
+                    new SolidColorBrush(current ? CurrentMatchBorderColor : MatchBorderColor),
                     current ? CurrentMatchBorderWidth : MatchBorderWidth
                 );
 

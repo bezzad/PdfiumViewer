@@ -4,17 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Effects;
-using System.Windows.Media.Imaging;
 using Image = System.Windows.Controls.Image;
-using Size = System.Drawing.Size;
 
 namespace PdfiumViewer
 {
@@ -55,7 +51,6 @@ namespace PdfiumViewer
         }
 
         public event EventHandler<int> PageChanged;
-        public event EventHandler MouseClick;
         public const double DefaultZoomMin = 0.1;
         public const double DefaultZoomMax = 5;
         public const double DefaultZoomFactor = 1.2;
@@ -65,9 +60,9 @@ namespace PdfiumViewer
         protected Process CurrentProcess { get; } = Process.GetCurrentProcess();
         protected StackPanel Panel { get; set; }
         protected Thickness FrameSpace { get; set; }
-        protected Image Frame1 => Frames?.FirstOrDefault();
-        protected Image Frame2 => Frames?.Length > 1 ? Frames[1] : null;
-        protected Image[] Frames { get; set; }
+        protected PdfFrame Frame1 => Frames?.FirstOrDefault();
+        protected PdfFrame Frame2 => Frames?.Length > 1 ? Frames[1] : null;
+        protected PdfFrame[] Frames { get; set; }
         public Size CurrentPageSize { get; set; }
         protected int ScrollWidth { get; set; }
         protected int MouseWheelDelta { get; set; }
@@ -100,20 +95,22 @@ namespace PdfiumViewer
         [DefaultValue(DefaultZoomFactor)] public double ZoomFactor { get; set; }
 
         public PdfBookmarkCollection Bookmarks => Document?.Bookmarks;
-        public IList<SizeF> PageSizes => Document?.PageSizes;
+        public IList<Size> PageSizes => Document?.PageSizes;
 
-        protected void ScrollToPage(int page)
+        protected PdfFrame ScrollToPage(int page)
         {
-            if (PagesDisplayMode == PdfViewerPagesDisplayMode.ContinuousMode)
+            PdfFrame frame;
+            switch(PagesDisplayMode)
             {
-                //
-                // scroll to current page
-                //
-                // var pageSize = CalculatePageSize(page);
-                // var verticalOffset = page * (pageSize.Height + FrameSpace.Top + FrameSpace.Bottom);
-                // ScrollToVerticalOffset(verticalOffset);
-                Frames?[page].BringIntoView();
+                case PdfViewerPagesDisplayMode.ContinuousMode:
+                    frame = Frames?[page];
+                    break;
+                default:
+                    frame = Frame1;
+                    break;
             }
+            frame?.BringIntoView();
+            return frame;
         }
         protected void OnPageNoChanged()
         {
@@ -128,28 +125,28 @@ namespace PdfiumViewer
             if (IsDocumentLoaded)
             {
                 Panel.Children.Clear();
-                Frames = null;
-
-                if (PagesDisplayMode == PdfViewerPagesDisplayMode.SinglePageMode)
+                switch (PagesDisplayMode)
                 {
-                    Frames = new Image[1];
-                    Panel.Orientation = Orientation.Horizontal;
+                    case PdfViewerPagesDisplayMode.SinglePageMode:
+                        Frames = new PdfFrame[1];
+                        Panel.Orientation = Orientation.Horizontal;
+                        break;
+                    case PdfViewerPagesDisplayMode.BookMode:
+                        Frames = new PdfFrame[2];
+                        Panel.Orientation = Orientation.Horizontal;
+                        break;
+                    case PdfViewerPagesDisplayMode.ContinuousMode:
+                        // frames created at scrolling
+                        Frames = new PdfFrame[Document.PageCount];
+                        Panel.Orientation = Orientation.Vertical;
+                        break;
+                    default:
+                        throw new NotImplementedException(PagesDisplayMode.ToString());
                 }
-                else if (PagesDisplayMode == PdfViewerPagesDisplayMode.BookMode)
-                {
-                    Frames = new Image[2];
-                    Panel.Orientation = Orientation.Horizontal;
-                }
-                else if (PagesDisplayMode == PdfViewerPagesDisplayMode.ContinuousMode)
-                {
-                    // frames created at scrolling
-                    Frames = new Image[Document.PageCount];
-                    Panel.Orientation = Orientation.Vertical;
-                }
-
                 for (var i = 0; i < Frames.Length; i++)
                 {
-                    Frames[i] ??= new Image { Margin = FrameSpace };
+                    Frames[i] = new PdfFrame((PdfRenderer)this) { Margin = FrameSpace };
+                    Frames[i].SetPage(i);
 
                     var pageSize = CalculatePageSize(i);
                     Frames[i].Width = pageSize.Width;
@@ -158,36 +155,17 @@ namespace PdfiumViewer
                     Panel.Children.Add(Frames[i]);
                 }
 
-                GC.Collect();
                 GotoPage(PageNo);
             }
-        }
-
-        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
-        {
-            base.OnMouseLeftButtonDown(e);
-            MouseClick?.Invoke(this, EventArgs.Empty);
         }
         protected void OnFlagsChanged()
         {
             GotoPage(PageNo);
         }
-        protected BitmapImage RenderPage(Image frame, int page, int width, int height)
+        protected ImageSource RenderPage(Image frame, int page, int width, int height)
         {
             if (frame == null) return null;
-            var image = Document.Render(page, (int)(width * 1.2f), (int)(height * 1.2f), Dpi, Dpi, Rotate, Flags);
-            BitmapImage bitmapImage;
-            using (var memory = new MemoryStream())
-            {
-                image.Save(memory, ImageFormat.Png);
-                memory.Position = 0;
-                bitmapImage = new BitmapImage();
-                bitmapImage.BeginInit();
-                bitmapImage.StreamSource = memory;
-                bitmapImage.CacheOption = BitmapCacheOption.OnLoad; // not a mistake - see below
-                bitmapImage.EndInit();
-                image.Dispose();
-            }
+            var image = Document.Render(page, width, height, Dpi, Dpi, Rotate, Flags);
             // Why BitmapCacheOption.OnLoad?
             // It seems counter intuitive, but this flag has two effects:
             // It enables caching if caching is possible, and it causes the load to happen at EndInit().
@@ -198,23 +176,23 @@ namespace PdfiumViewer
             {
                 frame.Width = width;
                 frame.Height = height;
-                frame.Source = bitmapImage;
+                frame.Source = image;
             });
-            GC.Collect();
-            return bitmapImage;
+            return image;
         }
-        protected Size CalculatePageSize(int? page = null)
+        protected Size CalculatePageSize(int page)
         {
-            page ??= PageNo;
             var isReverse = (Rotate == PdfRotation.Rotate90 || Rotate == PdfRotation.Rotate270);
             var containerWidth = ActualWidth - Padding.Left - Padding.Right - FrameSpace.Left - FrameSpace.Right; // ViewportWidth
             var containerHeight = ActualHeight - Padding.Top - Padding.Bottom - FrameSpace.Top - FrameSpace.Bottom; // ViewportHeight
 
             if (IsDocumentLoaded && containerWidth > 0 && containerHeight > 0)
             {
-                var currentPageSize = Document.GetPageSize(page.Value);
+                var currentPageSize = Document.GetPageSize(page);
+                if (currentPageSize.Width == 0 && currentPageSize.Height == 0)
+                    return default;
                 if (isReverse)
-                    currentPageSize = new SizeF(currentPageSize.Height, currentPageSize.Width);
+                    currentPageSize = new Size(currentPageSize.Height, currentPageSize.Width);
 
                 if (ZoomMode == PdfViewerZoomMode.FitHeight)
                 {
@@ -230,19 +208,18 @@ namespace PdfiumViewer
                 return new Size((int)(currentPageSize.Width * Zoom), (int)(currentPageSize.Height * Zoom));
             }
 
-            return new Size();
+            return default;
         }
         protected void ReleaseFrames(int keepFrom, int keepTo)
         {
             for (var f = 0; f < Frames?.Length; f++)
             {
                 var frame = Frames[f];
-                if ((f < keepFrom || f > keepTo) && frame.Source != null)
+                if ((f < keepFrom || f > keepTo) && frame.IsRendered)
                 {
-                    frame.Source = null;
+                    frame.Clear();
                 }
             }
-            GC.Collect();
         }
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
@@ -257,7 +234,7 @@ namespace PdfiumViewer
             
             if (IsDocumentLoaded)
             {
-                if (MouseWheelMode == MouseWheelMode.Zoom)
+                if (MouseWheelMode == MouseWheelMode.Zoom || Keyboard.Modifiers == ModifierKeys.Control)
                 {
                     e.Handled = true;
                     if (e.Delta > 0)
@@ -373,9 +350,9 @@ namespace PdfiumViewer
                 for (var page = PageNo; page <= endPageIndex; page++)
                 {
                     var frame = Frames[page];
-                    if (frame.Source == null) // && frame.IsUserVisible())
+                    if (!frame.IsRendered) // && frame.IsUserVisible())
                     {
-                        RenderPage(frame, page, (int)frame.Width, (int)frame.Height);
+                        frame.Render(Dpi, Rotate, Flags);
                     }
                 }
             }

@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
+using System.Windows;
 using System.Drawing.Printing;
 using System.IO;
 using PdfiumViewer.Core;
 using PdfiumViewer.Drawing;
 using PdfiumViewer.Enums;
+using System.Windows.Media;
 
 namespace PdfiumViewer
 {
@@ -27,7 +28,7 @@ namespace PdfiumViewer
         /// <summary>
         /// Size of each page in the PDF document.
         /// </summary>
-        IList<SizeF> PageSizes { get; }
+        IList<Size> PageSizes { get; }
 
         /// <summary>
         /// Renders a page of the PDF document to the provided graphics instance.
@@ -38,7 +39,7 @@ namespace PdfiumViewer
         /// <param name="dpiY">Vertical DPI.</param>
         /// <param name="bounds">Bounds to render the page in.</param>
         /// <param name="forPrinting">Render the page for printing.</param>
-        void Render(int page, Graphics graphics, float dpiX, float dpiY, Rectangle bounds, bool forPrinting);
+        void Render(int page, System.Drawing.Graphics graphics, float dpiX, float dpiY, Rect bounds, bool forPrinting);
 
         /// <summary>
         /// Renders a page of the PDF document to the provided graphics instance.
@@ -49,7 +50,7 @@ namespace PdfiumViewer
         /// <param name="dpiY">Vertical DPI.</param>
         /// <param name="bounds">Bounds to render the page in.</param>
         /// <param name="flags">Flags used to influence the rendering.</param>
-        void Render(int page, Graphics graphics, float dpiX, float dpiY, Rectangle bounds, PdfRenderFlags flags);
+        void Render(int page, System.Drawing.Graphics graphics, float dpiX, float dpiY, Rect bounds, PdfRenderFlags flags);
 
         /// <summary>
         /// Renders a page of the PDF document to an image.
@@ -59,7 +60,7 @@ namespace PdfiumViewer
         /// <param name="dpiY">Vertical DPI.</param>
         /// <param name="forPrinting">Render the page for printing.</param>
         /// <returns>The rendered image.</returns>
-        Image Render(int page, float dpiX, float dpiY, bool forPrinting);
+        ImageSource Render(int page, float dpiX, float dpiY, bool forPrinting);
 
         /// <summary>
         /// Renders a page of the PDF document to an image.
@@ -69,7 +70,7 @@ namespace PdfiumViewer
         /// <param name="dpiY">Vertical DPI.</param>
         /// <param name="flags">Flags used to influence the rendering.</param>
         /// <returns>The rendered image.</returns>
-        Image Render(int page, float dpiX, float dpiY, PdfRenderFlags flags);
+        ImageSource Render(int page, float dpiX, float dpiY, PdfRenderFlags flags);
 
         /// <summary>
         /// Renders a page of the PDF document to an image.
@@ -81,7 +82,7 @@ namespace PdfiumViewer
         /// <param name="dpiY">Vertical DPI.</param>
         /// <param name="forPrinting">Render the page for printing.</param>
         /// <returns>The rendered image.</returns>
-        Image Render(int page, int width, int height, float dpiX, float dpiY, bool forPrinting);
+        ImageSource Render(int page, int width, int height, float dpiX, float dpiY, bool forPrinting);
 
         /// <summary>
         /// Renders a page of the PDF document to an image.
@@ -93,7 +94,7 @@ namespace PdfiumViewer
         /// <param name="dpiY">Vertical DPI.</param>
         /// <param name="flags">Flags used to influence the rendering.</param>
         /// <returns>The rendered image.</returns>
-        Image Render(int page, int width, int height, float dpiX, float dpiY, PdfRenderFlags flags);
+        ImageSource Render(int page, int width, int height, float dpiX, float dpiY, PdfRenderFlags flags);
 
         /// <summary>
         /// Renders a page of the PDF document to an image.
@@ -106,7 +107,7 @@ namespace PdfiumViewer
         /// <param name="rotate">Rotation.</param>
         /// <param name="flags">Flags used to influence the rendering.</param>
         /// <returns>The rendered image.</returns>
-        Image Render(int page, int width, int height, float dpiX, float dpiY, PdfRotation rotate, PdfRenderFlags flags);
+        ImageSource Render(int page, int width, int height, float dpiX, float dpiY, PdfRotation rotate, PdfRenderFlags flags);
 
         /// <summary>
         /// Save the PDF document to the specified location.
@@ -175,9 +176,8 @@ namespace PdfiumViewer
         /// Returns all links on the PDF page.
         /// </summary>
         /// <param name="page">The page to get the links for.</param>
-        /// <param name="size">The size of the page.</param>
         /// <returns>A collection with the links on the page.</returns>
-        PdfPageLinks GetPageLinks(int page, Size size);
+        IReadOnlyList<PdfPageLink> GetPageLinks(int page);
 
         /// <summary>
         /// Delete the page from the PDF document.
@@ -229,7 +229,7 @@ namespace PdfiumViewer
         /// <param name="page">The page number where the point is from.</param>
         /// <param name="point">The point to convert.</param>
         /// <returns>The converted point.</returns>
-        PointF PointToPdf(int page, Point point);
+        Point PointToPdf(int page, Point point);
 
         /// <summary>
         /// Convert a point from page coordinates to device coordinates.
@@ -237,7 +237,7 @@ namespace PdfiumViewer
         /// <param name="page">The page number where the point is from.</param>
         /// <param name="point">The point to convert.</param>
         /// <returns>The converted point.</returns>
-        Point PointFromPdf(int page, PointF point);
+        Point PointFromPdf(int page, Point point);
 
         /// <summary>
         /// Convert a rectangle from device coordinates to page coordinates.
@@ -245,7 +245,7 @@ namespace PdfiumViewer
         /// <param name="page">The page where the rectangle is from.</param>
         /// <param name="rect">The rectangle to convert.</param>
         /// <returns>The converted rectangle.</returns>
-        RectangleF RectangleToPdf(int page, Rectangle rect);
+        Rect RectangleToPdf(int page, Rect rect);
 
         /// <summary>
         /// Convert a rectangle from page coordinates to device coordinates.
@@ -253,6 +253,6 @@ namespace PdfiumViewer
         /// <param name="page">The page where the rectangle is from.</param>
         /// <param name="rect">The rectangle to convert.</param>
         /// <returns>The converted rectangle.</returns>
-        Rectangle RectangleFromPdf(int page, RectangleF rect);
+        Rect RectangleFromPdf(int page, Rect rect);
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
+using System.Windows;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -78,7 +78,7 @@ namespace PdfiumViewer.Core
         {
             return NativeMethods.FPDF_GetPageCount(_document);
         }
-        public PdfPageLinks GetPageLinks(int pageNumber, Size pageSize)
+        public IReadOnlyList<PdfPageLink> GetPageLinks(int pageNumber)
         {
             if (_disposed)
                 throw new ObjectDisposedException(GetType().Name);
@@ -114,7 +114,7 @@ namespace PdfiumViewer.Core
                     if (NativeMethods.FPDFLink_GetAnnotRect(annotation, rect) && (target.HasValue || uri != null))
                     {
                         links.Add(new PdfPageLink(
-                            new RectangleF(rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top),
+                            new[] { new Point(rect.left, rect.top), new Point(rect.right, rect.bottom) },
                             target,
                             uri
                         ));
@@ -122,16 +122,16 @@ namespace PdfiumViewer.Core
                 }
             }
 
-            return new PdfPageLinks(links);
+            return links;
         }
 
-        public List<SizeF> GetPDFDocInfo()
+        public List<Size> GetPDFDocInfo()
         {
             if (_disposed)
                 throw new ObjectDisposedException(GetType().Name);
 
             var pageCount = NativeMethods.FPDF_GetPageCount(_document);
-            var result = new List<SizeF>(pageCount);
+            var result = new List<Size>(pageCount);
 
             for (var i = 0; i < pageCount; i++)
             {
@@ -141,13 +141,13 @@ namespace PdfiumViewer.Core
             return result;
         }
 
-        public SizeF GetPDFDocInfo(int pageNumber)
+        public Size GetPDFDocInfo(int pageNumber)
         {
             double height;
             double width;
             NativeMethods.FPDF_GetPageSizeByIndex(_document, pageNumber, out width, out height);
 
-            return new SizeF((float)width, (float)height);
+            return new Size(width, height);
         }
 
         public void Save(Stream stream)
@@ -294,7 +294,7 @@ namespace PdfiumViewer.Core
             }
         }
 
-        public Point PointFromPdf(int page, PointF point)
+        public Point PointFromPdf(int page, Point point)
         {
             using (var pageData = new PageData(_document, _form, page))
             {
@@ -315,7 +315,7 @@ namespace PdfiumViewer.Core
             }
         }
 
-        public Rectangle RectangleFromPdf(int page, RectangleF rect)
+        public Rect RectangleFromPdf(int page, Rect rect)
         {
             using (var pageData = new PageData(_document, _form, page))
             {
@@ -345,7 +345,7 @@ namespace PdfiumViewer.Core
                     out var deviceY2
                 );
 
-                return new Rectangle(
+                return new Rect(
                     deviceX1,
                     deviceY1,
                     deviceX2 - deviceX1,
@@ -354,7 +354,7 @@ namespace PdfiumViewer.Core
             }
         }
 
-        public PointF PointToPdf(int page, Point point)
+        public Point PointToPdf(int page, Point point)
         {
             using (var pageData = new PageData(_document, _form, page))
             {
@@ -365,17 +365,17 @@ namespace PdfiumViewer.Core
                     (int)pageData.Width,
                     (int)pageData.Height,
                     0,
-                    point.X,
-                    point.Y,
+                    (int)point.X,
+                    (int)point.Y,
                     out var deviceX,
                     out var deviceY
                 );
 
-                return new PointF((float)deviceX, (float)deviceY);
+                return new Point(deviceX, deviceY);
             }
         }
 
-        public RectangleF RectangleToPdf(int page, Rectangle rect)
+        public Rect RectangleToPdf(int page, Rect rect)
         {
             using (var pageData = new PageData(_document, _form, page))
             {
@@ -386,8 +386,8 @@ namespace PdfiumViewer.Core
                     (int)pageData.Width,
                     (int)pageData.Height,
                     0,
-                    rect.Left,
-                    rect.Top,
+                    (int)rect.Left,
+                    (int)rect.Top,
                     out var deviceX1,
                     out var deviceY1
                 );
@@ -399,17 +399,17 @@ namespace PdfiumViewer.Core
                     (int)pageData.Width,
                     (int)pageData.Height,
                     0,
-                    rect.Right,
-                    rect.Bottom,
+                    (int)rect.Right,
+                    (int)rect.Bottom,
                     out var deviceX2,
                     out var deviceY2
                 );
 
-                return new RectangleF(
-                    (float)deviceX1,
-                    (float)deviceY1,
-                    (float)(deviceX2 - deviceX1),
-                    (float)(deviceY2 - deviceY1)
+                return new Rect(
+                    deviceX1,
+                    deviceY1,
+                    (deviceX2 - deviceX1),
+                    (deviceY2 - deviceY1)
                 );
             }
         }
@@ -417,33 +417,32 @@ namespace PdfiumViewer.Core
         private IList<PdfRectangle> GetTextBounds(IntPtr textPage, int page, int index, int matchLength)
         {
             var result = new List<PdfRectangle>();
-            RectangleF? lastBounds = null;
+            Point[] lastBounds = null;
 
             for (var i = 0; i < matchLength; i++)
             {
                 var bounds = GetBounds(textPage, index + i);
 
-                if (bounds.Width == 0 || bounds.Height == 0)
+                if (bounds[0].X == bounds[1].X || bounds[0].Y == bounds[1].Y)
                     continue;
 
                 if (
-                    lastBounds.HasValue &&
-                    AreClose(lastBounds.Value.Right, bounds.Left) &&
-                    AreClose(lastBounds.Value.Top, bounds.Top) &&
-                    AreClose(lastBounds.Value.Bottom, bounds.Bottom)
+                    lastBounds != null &&
+                    AreClose(lastBounds[1].X, bounds[0].X) &&
+                    AreClose(lastBounds[1].Y, bounds[0].Y) &&
+                    AreClose(lastBounds[1].Y, bounds[0].Y)
                 )
                 {
-                    var top = Math.Max(lastBounds.Value.Top, bounds.Top);
-                    var bottom = Math.Min(lastBounds.Value.Bottom, bounds.Bottom);
+                    var top = Math.Max(lastBounds[0].Y, bounds[0].Y);
+                    var bottom = Math.Min(lastBounds[1].Y, bounds[1].Y);
 
-                    lastBounds = new RectangleF(
-                        lastBounds.Value.Left,
-                        top,
-                        bounds.Right - lastBounds.Value.Left,
-                        bottom - top
-                    );
+                    lastBounds = new[]
+                    {
+                        new Point(lastBounds[0].X, top),
+                        new Point(bounds[1].X, bottom),
+                    };
 
-                    result[result.Count - 1] = new PdfRectangle(page, lastBounds.Value);
+                    result[result.Count - 1] = new PdfRectangle(page, lastBounds);
                 }
                 else
                 {
@@ -455,12 +454,12 @@ namespace PdfiumViewer.Core
             return result;
         }
 
-        private bool AreClose(float p1, float p2)
+        private bool AreClose(double p1, double p2)
         {
-            return Math.Abs(p1 - p2) < 4f;
+            return Math.Abs(p1 - p2) < 4d;
         }
 
-        private RectangleF GetBounds(IntPtr textPage, int index)
+        private Point[] GetBounds(IntPtr textPage, int index)
         {
             NativeMethods.FPDFText_GetCharBox(
                 textPage,
@@ -471,12 +470,11 @@ namespace PdfiumViewer.Core
                 out var top
             );
 
-            return new RectangleF(
-                (float)left,
-                (float)top,
-                (float)(right - left),
-                (float)(bottom - top)
-            );
+            return new[]
+            {
+                new Point(left, top),
+                new Point(right, bottom),
+            };
         }
 
         public string GetPdfText(int page)
@@ -604,8 +602,6 @@ namespace PdfiumViewer.Core
         public void Dispose()
         {
             Dispose(true);
-
-            GC.SuppressFinalize(this);
         }
 
         protected virtual void Dispose(bool disposing)

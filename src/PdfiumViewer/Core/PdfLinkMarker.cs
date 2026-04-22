@@ -8,28 +8,27 @@ using System.Windows.Shapes;
 
 namespace PdfiumViewer.Core
 {
-    public class PdfMarker : IPdfMarker
+    public class PdfLinkMarker : IPdfMarker
     {
         public int Page { get; }
         public Point[] Bounds { get; }
         public Rectangle Rectangle { get; }
         public object Tag { get; set; }
 
-        public PdfMarker(int page, Point[] bounds, Brush fill, string tooltip = null) : this(page, bounds, fill, Brushes.Transparent, 0, tooltip)
-        {
-        }
-
-        public PdfMarker(int page, Point[] bounds, Brush fill, Brush stroke, double strokeThickness, string tooltip = null)
+        public PdfLinkMarker(int page, Point[] bounds, Brush stroke, string tooltip = null)
         {
             Page = page;
             Bounds = bounds;
             Rectangle = new Rectangle
             {
-                Fill = fill,
+                Fill = Brushes.Transparent,
                 Stroke = stroke,
-                StrokeThickness = strokeThickness,
+                StrokeThickness = 0,
                 ToolTip = tooltip,
+                Cursor = Cursors.Hand,
             };
+            Rectangle.MouseEnter += Rectangle_MouseEnter;
+            Rectangle.MouseLeave += Rectangle_MouseLeave;
         }
 
         public IEnumerable<FrameworkElement> Draw(PdfFrame frame)
@@ -49,5 +48,15 @@ namespace PdfiumViewer.Core
             var center = new Point(Canvas.GetLeft(Rectangle) + Rectangle.Width / 2, Canvas.GetTop(Rectangle) + Rectangle.Height / 2);
             return Point.Subtract(center, pt).Length;
         }
+
+        private void Rectangle_MouseEnter(object sender, MouseEventArgs e)
+        {
+            Rectangle.StrokeThickness = 2;
+        }
+        private void Rectangle_MouseLeave(object sender, MouseEventArgs e)
+        {
+            Rectangle.StrokeThickness = 0;
+        }
+
     }
 }

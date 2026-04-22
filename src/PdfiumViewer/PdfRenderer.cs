@@ -16,7 +16,6 @@ namespace PdfiumViewer
         {
             IsTabStop = true;
             Markers = new PdfMarkerCollection();
-            Markers.CollectionChanged += Markers_CollectionChanged;
         }
 
 
@@ -24,7 +23,6 @@ namespace PdfiumViewer
         /// Gets a collection with all markers.
         /// </summary>
         public PdfMarkerCollection Markers { get; }
-        private List<IPdfMarker>[] _markers;
 
         public void OpenPdf(string path, bool isRightToLeft = false)
         {
@@ -63,9 +61,7 @@ namespace PdfiumViewer
             Document?.Dispose();
             Document = null;
             Frames = null;
-            _markers = null;
             Panel.Children.Clear();
-            GC.Collect();
         }
         public void ClockwiseRotate()
         {
@@ -169,8 +165,8 @@ namespace PdfiumViewer
             //     bounds.Bounds
             // );
             //
-            // var topLeft = TranslatePointFromPdf(pageBounds.Size, pageSize, new PointF(translated.Left, translated.Top));
-            // var bottomRight = TranslatePointFromPdf(pageBounds.Size, pageSize, new PointF(translated.Right, translated.Bottom));
+            // var topLeft = TranslatePointFromPdf(pageBounds.Size, pageSize, new Point(translated.Left, translated.Top));
+            // var bottomRight = TranslatePointFromPdf(pageBounds.Size, pageSize, new Point(translated.Right, translated.Bottom));
             //
             // return new Rectangle(
             //     pageBounds.Left + offset.Width + Math.Min(topLeft.X, bottomRight.X),
@@ -198,62 +194,6 @@ namespace PdfiumViewer
             return new Rect(0, 0, (int)ViewportWidth, (int)ViewportHeight);
         }
 
-        private void EnsureMarkers()
-        {
-            if (_markers != null)
-                return;
-
-            _markers = new List<IPdfMarker>[1];
-
-            foreach (var marker in Markers)
-            {
-                if (marker.Page < 0 || marker.Page >= _markers.Length)
-                    continue;
-
-                _markers[marker.Page] ??= new List<IPdfMarker>();
-                _markers[marker.Page].Add(marker);
-            }
-        }
-
-        private void DrawMarkers(DrawingContext graphics, int page)
-        {
-            if (_markers?.Length > 0 && _markers.Length > page)
-            {
-                var markers = _markers[page];
-                if (markers == null)
-                    return;
-
-                foreach (var marker in markers)
-                {
-                    marker.Draw(this, graphics);
-                }
-            }
-        }
-
-        
-
-        private void Markers_CollectionChanged(object sender, EventArgs e)
-        {
-            RedrawMarkers();
-        }
-        private void RedrawMarkers()
-        {
-            _markers = null;
-
-            GotoPage(PageNo);
-        }
-        protected override void OnRender(DrawingContext drawingContext)
-        {
-            base.OnRender(drawingContext);
-
-            if (Document == null)
-                return;
-
-            EnsureMarkers();
-
-            DrawMarkers(drawingContext, PageNo);
-        }
-
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -261,7 +201,6 @@ namespace PdfiumViewer
                 base.Dispose(true);
                 Dispatcher.Invoke(UnLoad);
                 GC.SuppressFinalize(this);
-                GC.Collect();
             }
         }
 

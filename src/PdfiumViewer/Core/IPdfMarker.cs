@@ -1,4 +1,7 @@
-﻿using System.Windows.Media;
+﻿using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace PdfiumViewer.Core
 {
@@ -12,11 +15,19 @@ namespace PdfiumViewer.Core
         /// </summary>
         int Page { get; }
 
+        object Tag { get; set; }
+
         /// <summary>
         /// Draw the marker.
         /// </summary>
-        /// <param name="renderer">The PdfRenderer to draw the marker with.</param>
-        /// <param name="graphics">The Graphics to draw the marker with.</param>
-        void Draw(PdfRenderer renderer, DrawingContext graphics);
+        /// <param name="frame">The PdfFrame to draw the marker onto.</param>
+        IEnumerable<FrameworkElement> Draw(PdfFrame frame);
+
+        /// <summary>
+        /// Get the distance of the marker to a point on the PdfFrame
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        double GetDistance(Point point);
     }
 }

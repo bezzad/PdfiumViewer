@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+﻿using System.Windows;
 
 namespace PdfiumViewer.Core
 {
@@ -10,7 +10,7 @@ namespace PdfiumViewer.Core
         /// <summary>
         /// The location of the link.
         /// </summary>
-        public RectangleF Bounds { get; private set; }
+        public Point[] Bounds { get; private set; }
 
         /// <summary>
         /// The target of the link.
@@ -28,7 +28,7 @@ namespace PdfiumViewer.Core
         /// <param name="bounds">The location of the link</param>
         /// <param name="targetPage">The target page of the link</param>
         /// <param name="uri">The target URI of the link</param>
-        public PdfPageLink(RectangleF bounds, int? targetPage, string uri)
+        public PdfPageLink(Point[] bounds, int? targetPage, string uri)
         {
             Bounds = bounds;
             TargetPage = targetPage;

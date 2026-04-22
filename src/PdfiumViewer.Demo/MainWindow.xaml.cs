@@ -17,6 +17,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace PdfiumViewer.Demo
 {
@@ -279,11 +280,11 @@ namespace PdfiumViewer.Demo
                 for (var i = 0; i < Renderer.PageCount; i++)
                 {
                     var size = Renderer.Document.PageSizes[i];
-                    var image = Renderer.Document.Render(i, (int)size.Width * 5, (int)size.Height * 5, 300, 300, false);
-                    var imagew = Rendererw.Document.Render(i, 150, 200, 60, 60, false);
-                    
-                    image.Save(Path.Combine(path, $"img{i}.png"));
-                    imagew.Save(Path.Combine(path, $"img{i}.png"));
+                    var image = Rendererw.Document.Render(i, 150, 200, 60, 60, false);
+                    var encoder = new PngBitmapEncoder();
+                    encoder.Frames.Add(BitmapFrame.Create(image as BitmapSource));
+                    using (var fileStream = new FileStream(Path.Combine(path, $"img{i}.png"), FileMode.Create))
+                        encoder.Save(fileStream);
                 }
             }
             catch (Exception ex)

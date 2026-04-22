@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Drawing;
+using System.Windows;
 using System.Drawing.Printing;
 using PdfiumViewer.Enums;
 
@@ -186,7 +186,7 @@ namespace PdfiumViewer.Core
                 e.Graphics,
                 e.Graphics.DpiX,
                 e.Graphics.DpiY,
-                new Rectangle(
+                new Rect(
                     AdjustDpi(e.Graphics.DpiX, left),
                     AdjustDpi(e.Graphics.DpiY, top),
                     AdjustDpi(e.Graphics.DpiX, scaledWidth),
@@ -208,10 +208,16 @@ namespace PdfiumViewer.Core
             return (int)((value / 100.0) * dpi);
         }
 
-        private Orientation GetOrientation(SizeF pageSize)
+        private Orientation GetOrientation(Size pageSize)
         {
             return pageSize.Height > pageSize.Width 
                 ? Orientation.Portrait 
+                : Orientation.Landscape;
+        }
+        private Orientation GetOrientation(System.Drawing.Size pageSize)
+        {
+            return pageSize.Height > pageSize.Width
+                ? Orientation.Portrait
                 : Orientation.Landscape;
         }
 

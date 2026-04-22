@@ -1,43 +1,87 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace PdfiumViewer.Core
 {
-    public class PdfMarkerCollection : Collection<IPdfMarker>
+    public class PdfMarkerCollection : ICollection<IPdfMarker>
     {
-        public event EventHandler CollectionChanged;
+        private int _markerCount;
+        private Dictionary<int, List<IPdfMarker>> _markers = new Dictionary<int, List<IPdfMarker>>();
 
-        protected override void ClearItems()
+        public int Count => _markerCount;
+
+        public bool IsReadOnly => false;
+
+        public void Add(IPdfMarker item)
         {
-            base.ClearItems();
-
-            OnCollectionChanged(EventArgs.Empty);
+            if (item == null)
+                throw new ArgumentNullException(nameof(item));
+            if (_markers.TryGetValue(item.Page, out var markers))
+                markers.Add(item);
+            else
+                _markers.Add(item.Page, new List<IPdfMarker> { item });
+            _markerCount++;
+        }
+        public void AddRange(IEnumerable<IPdfMarker> items)
+        {
+            if(items == null) 
+                throw new ArgumentNullException(nameof(items));
+            foreach (var item in items)
+                Add(item);
         }
 
-        protected override void InsertItem(int index, IPdfMarker item)
+        public void Clear()
         {
-            base.InsertItem(index, item);
-
-            OnCollectionChanged(EventArgs.Empty);
+            _markers.Clear();
+            _markerCount = 0;
         }
 
-        protected override void RemoveItem(int index)
+        public bool Contains(IPdfMarker item)
         {
-            base.RemoveItem(index);
-
-            OnCollectionChanged(EventArgs.Empty);
+            if (item == null)
+                return false;
+            if (_markers.TryGetValue(item.Page, out var markers))
+                return markers.Contains(item);
+            return false;
         }
 
-        protected override void SetItem(int index, IPdfMarker item)
+        public IReadOnlyList<IPdfMarker> Get(int pageIndex)
         {
-            base.SetItem(index, item);
-
-            OnCollectionChanged(EventArgs.Empty);
+            if (_markers.TryGetValue(pageIndex, out var markers))
+                return markers;
+            return Array.Empty<IPdfMarker>();
         }
 
-        protected virtual void OnCollectionChanged(EventArgs e)
+        public void CopyTo(IPdfMarker[] array, int arrayIndex)
         {
-            CollectionChanged?.Invoke(this, e);
+            foreach (var list in _markers.Values)
+                foreach(var marker in list)
+                    array[arrayIndex++] = marker;
+        }
+
+        public IEnumerator<IPdfMarker> GetEnumerator()
+        {
+            return _markers.Values.SelectMany(list => list).GetEnumerator();
+        }
+
+        public bool Remove(IPdfMarker item)
+        {
+            if (item == null)
+                return false;
+            if (_markers.TryGetValue(item.Page, out var markers) && markers.Remove(item))
+            {
+                _markerCount--;
+                return true;
+            }
+            return false;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return _markers.Values.SelectMany(list => list).GetEnumerator();
         }
     }
 }

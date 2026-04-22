@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Drawing;
+using System.Windows;
 
 namespace PdfiumViewer.Drawing
 {
@@ -12,11 +12,11 @@ namespace PdfiumViewer.Drawing
 
         public int Page => _page - 1;
 
-        public RectangleF Bounds { get; }
+        public Point[] Bounds { get; }
 
         public bool IsValid => _page != 0;
 
-        public PdfRectangle(int page, RectangleF bounds)
+        public PdfRectangle(int page, Point[] bounds)
         {
             _page = page + 1;
             Bounds = bounds;
@@ -26,7 +26,8 @@ namespace PdfiumViewer.Drawing
         {
             return
                 Page == other.Page &&
-                Bounds == other.Bounds;
+                Bounds[0] == other.Bounds[0] &&
+                Bounds[1] == other.Bounds[1];
         }
 
         public override bool Equals(object obj)
@@ -40,7 +41,7 @@ namespace PdfiumViewer.Drawing
         {
             unchecked
             {
-                return (Page * 397) ^ Bounds.GetHashCode();
+                return (Page * 397) + (Bounds?[0].GetHashCode() ?? 1) * 5 + (Bounds?[1].GetHashCode() ?? 1) * 7;
             }
         }
 
