@@ -60,8 +60,7 @@ namespace PdfiumViewer
         protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
         {
             base.OnPreviewMouseDown(e);
-
-            if (EnableKinetic && IsMouseOver)
+            if ((EnableKinetic || e.ChangedButton == MouseButton.Middle) && IsMouseOver)
             {
                 Cursor = Cursors.ScrollAll;
                 // Save starting point, used later when
@@ -77,7 +76,7 @@ namespace PdfiumViewer
         {
             base.OnPreviewMouseMove(e);
 
-            if (EnableKinetic && _isMouseDown)
+            if ((EnableKinetic || e.MiddleButton == MouseButtonState.Pressed) && _isMouseDown)
             {
                 var currentPoint = e.GetPosition(this);
                 // Determine the new amount to scroll.
@@ -93,7 +92,7 @@ namespace PdfiumViewer
         {
             base.OnPreviewMouseUp(e);
 
-            if (EnableKinetic && _isMouseDown)
+            if ((EnableKinetic || e.ChangedButton == MouseButton.Middle) && _isMouseDown)
             {
                 Cursor = Cursors.Hand;
                 _isMouseDown = false;
