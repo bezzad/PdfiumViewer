@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Media;
@@ -12,11 +13,32 @@ namespace PdfiumViewer
 {
     public class PdfRenderer : ScrollPanel
     {
+        /// <summary>
+        /// Gets or sets the pre-selected printer to be used when the print
+        /// dialog shows up.
+        /// </summary>
+        [DefaultValue(null)]
+        public string DefaultPrinter { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default document name used when saving the document.
+        /// </summary>
+        [DefaultValue(null)]
+        public string DefaultDocumentName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default print mode.
+        /// </summary>
+        [DefaultValue(PdfPrintMode.CutMargin)]
+        public PdfPrintMode DefaultPrintMode { get; set; }
+
         public PdfRenderer()
         {
             IsTabStop = true;
             Markers = new PdfMarkerCollection();
             Markers.CollectionChanged += Markers_CollectionChanged;
+
+            DefaultPrintMode = PdfPrintMode.CutMargin;
         }
 
 

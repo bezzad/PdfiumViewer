@@ -18,6 +18,7 @@
     <PackageReleaseNotes>.Net 5 Support</PackageReleaseNotes>
     <AssemblyVersion>1.0.6.0</AssemblyVersion>
     <FileVersion>1.0.6.0</FileVersion>
+	<UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
   <ItemGroup>

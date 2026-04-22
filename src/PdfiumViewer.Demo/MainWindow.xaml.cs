@@ -118,9 +118,24 @@ namespace PdfiumViewer.Demo
             {
                 var bytes = File.ReadAllBytes(dialog.FileName);
                 var mem = new MemoryStream(bytes);
-                Renderer.OpenPdf(mem);
+                // Renderer.OpenPdf(mem);
+                OpenDocument(mem);
             }
         }
+
+        private void OpenDocument(Stream openMem)
+        {
+            try
+            {
+                Renderer.OpenPdf(openMem);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+        }
+
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
@@ -339,6 +354,38 @@ namespace PdfiumViewer.Demo
         {
             Renderer.IsRightToLeft = false;
             OnPropertyChanged(nameof(IsRtl));
+        }
+        private async void OnPrintPdf(object sender, RoutedEventArgs e)
+        {
+            if (Renderer.Document == null)
+            {
+                MessageBox.Show(this, "No PDF For Print!!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            using (var form = new System.Windows.Forms.PrintDialog())
+            using (var document = Renderer.CreatePrintDocument(Renderer.DefaultPrintMode))
+            {
+                form.AllowSomePages = true;
+                form.Document = document;
+                form.UseEXDialog = true;
+                form.Document.PrinterSettings.FromPage = 1;
+                form.Document.PrinterSettings.ToPage = Renderer.Document.PageCount;
+                if (Renderer.DefaultPrinter != null)
+                    form.Document.PrinterSettings.PrinterName = Renderer.DefaultPrinter;
+
+                if (form.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    try
+                    {
+                        if (form.Document.PrinterSettings.FromPage <= Renderer.Document.PageCount)
+                            form.Document.Print();
+                    }
+                    catch
+                    {
+                        // Ignore exceptions; the printer dialog should take care of this.
+                    }
+                }
+            }
         }
 
         private async void OnClosePdf(object sender, RoutedEventArgs e)

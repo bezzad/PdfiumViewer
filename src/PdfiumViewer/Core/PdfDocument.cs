@@ -105,10 +105,37 @@ namespace PdfiumViewer.Core
         /// <param name="password">Password for the PDF document.</param>
         public static PdfDocument Load(Stream stream, string password)
         {
-            if (stream == null)
-                throw new ArgumentNullException(nameof(stream));
+            try
+            {
+                while (true)
+                {
+                    try
+                    {
+                        return new PdfDocument(stream, password);
+                    }
+                    catch (PdfException ex)
+                    {
+                        if (stream != null && ex.Error == PdfError.PasswordProtected)
+                        {
+                            using (var form = new PasswordForm())
+                            {
+                                if (form.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                                {
+                                    password = form.Password;
+                                    continue;
+                                }
+                            }
+                        }
 
-            return new PdfDocument(stream, password);
+                        throw;
+                    }
+                }
+            }
+            catch
+            {
+                stream.Dispose();
+                throw;
+            }
         }
 
         /// <summary>

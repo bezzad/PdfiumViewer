@@ -205,6 +205,9 @@
             <Button ToolTip="Pdf Information" Click="OnInfo">
                 <Image Source="Resources/info.png" />
             </Button>
+            <Button ToolTip="Print PDF" Click="OnPrintPdf">
+                <Image Source="Resources/open_pdf.png" />
+            </Button>
             <Button ToolTip="Close PDF" Click="OnClosePdf">
                 <Image Source="Resources/close_pdf.png" />
             </Button>
