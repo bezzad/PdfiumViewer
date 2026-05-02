@@ -1,6 +1,5 @@
-﻿using System;
-using System.Runtime.Serialization;
-using PdfiumViewer.Enums;
+﻿using PdfiumViewer.Enums;
+using System;
 
 #pragma warning disable 1591
 
@@ -48,11 +47,6 @@ namespace PdfiumViewer.Core
 
         public PdfException(string message, Exception innerException)
             : base(message, innerException)
-        {
-        }
-
-        protected PdfException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
         {
         }
     }
